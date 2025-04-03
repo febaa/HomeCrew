@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:homecrew/auth/auth_gate.dart';
+import 'package:homecrew/auth/auth_service.dart';
 import 'package:homecrew/customerscreens/customer_createaccount.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class ServSignin extends StatefulWidget {
   const ServSignin({super.key});
@@ -9,9 +12,31 @@ class ServSignin extends StatefulWidget {
 }
 
 class _ServSigninState extends State<ServSignin> {
+  final authService = AuthService();
+
   var emailController =  TextEditingController();
   var passwordController = TextEditingController();
+
+  final supabase = Supabase.instance.client;
   
+  void signIn() async {
+    //prepare data
+    final email = emailController.text;
+    final password = passwordController.text;
+
+    //attempt login..
+    try {
+      await authService.signInWithEmailPassword(email, password);
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => AuthGate(false, login: "Service", )));
+      
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text("Error: $e")));
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -76,7 +101,7 @@ class _ServSigninState extends State<ServSignin> {
                           ),
                           const SizedBox(height: 20),
                           ElevatedButton(
-                            onPressed: () {},
+                            onPressed: signIn,
                             style: ElevatedButton.styleFrom(
                               foregroundColor: const Color(0xFF006A4E),
                               backgroundColor: Colors.white,

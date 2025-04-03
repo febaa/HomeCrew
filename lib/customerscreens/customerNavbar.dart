@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:homecrew/customerscreens/cart.dart';
 import 'package:homecrew/customerscreens/customer_bookings.dart';
-import 'package:homecrew/customerscreens/customer_wallet.dart';
 import 'package:homecrew/customerscreens/customer_homescreen.dart';
 import 'package:homecrew/customerscreens/my_account.dart';
 
@@ -25,8 +26,8 @@ class _CustomerNavbarState extends State<CustomerNavbar> {
   Widget build(BuildContext context) {
     final List<Widget> pages = [
       CustomerHomePage(),
-      CustomerWallet(),
-      CustomerBookings(),
+      Bookings(),
+      Cart(),
       CustomerAccountPage()
     ];
     return MaterialApp(
@@ -66,10 +67,10 @@ class _CustomerNavbarState extends State<CustomerNavbar> {
                         color: const Color(0xFF006A4E),
                         shape: BoxShape.circle,
                       ),
-                      child: Icon(Icons.account_balance_wallet_outlined, color: Colors.white),
+                      child: Icon(FontAwesomeIcons.book, color: Colors.white),
                     )
-                  : Icon(Icons.account_balance_wallet_outlined),
-              label: 'Wallet',
+                  : Icon(FontAwesomeIcons.book),
+              label: 'Bookings',
             ),
             BottomNavigationBarItem(
               icon: _selectedIndex == 2
@@ -79,10 +80,10 @@ class _CustomerNavbarState extends State<CustomerNavbar> {
                         color: const Color(0xFF006A4E),
                         shape: BoxShape.circle,
                       ),
-                      child: Icon(Icons.calendar_today, color: Colors.white),
+                      child: Icon(FontAwesomeIcons.bagShopping, color: Colors.white),
                     )
-                  : Icon(Icons.calendar_today),
-              label: 'Bookings',
+                  : Icon(FontAwesomeIcons.bagShopping),
+              label: 'Cart',
             ),
             BottomNavigationBarItem(
               icon: _selectedIndex == 3

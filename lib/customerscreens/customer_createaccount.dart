@@ -51,7 +51,8 @@ class _CustomerCreateAccountState extends State<CustomerCreateAccount> {
         'name': name,
         'password': password,
         'email': email,
-        'mobile': mobileNo
+        'mobile': mobileNo,
+        'role': "Customer"
       });
       //pop this register page
       Navigator.pop(context);

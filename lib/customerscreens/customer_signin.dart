@@ -31,8 +31,8 @@ class _CustomerSigninState extends State<CustomerSignin> {
     //attempt login..
     try {
       await authService.signInWithEmailPassword(email, password);
-      print("LOGGED IN");
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => AuthGate()));
+      print("LOGGED IN AS CUSTOMER");
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => AuthGate(false, login: "Customer", )));
       
     } catch (e) {
       if (mounted) {

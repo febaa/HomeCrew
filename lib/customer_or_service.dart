@@ -9,7 +9,7 @@ class CustomerOrService extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor:const Color(0xFF006A4E),
+      backgroundColor: Colors.white,
       body: Container(
         child: Center(
           child: (Column(
@@ -17,7 +17,7 @@ class CustomerOrService extends StatelessWidget {
             children: [
               Text(
                 "Are you a",
-                style: TextStyle(fontSize: 22)
+                style: TextStyle(fontSize: 22, color: Color(0xFF006A4E))
               ),
               SizedBox(
                 height: 10,
@@ -28,9 +28,10 @@ class CustomerOrService extends StatelessWidget {
                 onPressed: () {
                   _navigateToSignInScreen(context, CustomerGetStarted(), false);
                 },
+                
               ),
               const Divider(
-                color: Color.fromARGB(255, 126, 70, 62), // Line color
+                color: const Color(0xFF006A4E), // Line color
                 thickness: 1, // Line thickness
                 indent: 70, // Left spacing
                 endIndent: 70, // Right spacing
@@ -85,7 +86,7 @@ class CustomButton extends StatelessWidget {
     required this.imageAsset,
     required this.buttonText,
     required this.onPressed,
-  });
+  }) ;
 
   @override
   Widget build(BuildContext context) {
@@ -99,7 +100,7 @@ class CustomButton extends StatelessWidget {
           borderRadius: BorderRadius.circular(10),
           boxShadow: [
             BoxShadow(
-              color: Colors.grey.withOpacity(0.5),
+              color: const Color(0xFF006A4E).withOpacity(0.5),
               spreadRadius: 3,
               blurRadius: 2,
               offset: const Offset(0, 3),
@@ -127,7 +128,7 @@ class CustomButton extends StatelessWidget {
               decoration: const BoxDecoration(
                 borderRadius:
                     BorderRadius.vertical(bottom: Radius.circular(10)),
-                color: Color.fromARGB(255, 126, 70, 62),
+                color: const Color(0xFF006A4E),
               ),
               child: Center(
                 child: Text(

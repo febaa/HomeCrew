@@ -1,5 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:homecrew/auth/auth_service.dart';
+import 'package:homecrew/customerscreens/aboutUs.dart';
+import 'package:homecrew/customerscreens/customerNavbar.dart';
+import 'package:homecrew/customerscreens/help&support.dart';
+import 'package:homecrew/customerscreens/myplans.dart';
+import 'package:homecrew/customerscreens/offers&coupons.dart';
+import 'package:homecrew/customerscreens/paymentmethod.dart';
+import 'package:homecrew/customerscreens/ratings.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class CustomerAccountPage extends StatefulWidget {
@@ -14,6 +21,7 @@ class _CustomerAccountPageState extends State<CustomerAccountPage> {
   final supabase = Supabase.instance.client;
   late String uid;
   String name = "";
+  int mobile = 0;
 
   @override
   void initState() {
@@ -26,13 +34,14 @@ class _CustomerAccountPageState extends State<CustomerAccountPage> {
     try {
       final response = await supabase
           .from('users') // Replace 'users' with your table name
-          .select('name') // Select the desired columns
+          .select('name, mobile') // Select the desired columns
           .eq('uid', uid) // Filter by UID
           .single(); // Fetch a single row
 
       if (response != null) {
         setState(() {
           name = response['name'] ?? 'No Name';
+          mobile = response['mobile'] ?? 0;
         });
       } else {
         setState(() {
@@ -68,7 +77,7 @@ class _CustomerAccountPageState extends State<CustomerAccountPage> {
             ),
             SizedBox(height: 4),
             Text(
-              "097986",
+              mobile.toString(),
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 14,
@@ -94,7 +103,14 @@ class _CustomerAccountPageState extends State<CustomerAccountPage> {
               children: [
                 // First Button
                 GestureDetector(
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                    MaterialPageRoute(
+                     builder: (context) => CustomerNavbar(1), // Navigate to the 2nd tab (index 1)
+                    ),
+                  );
+                  },
                   child: Column(
                     children: [
                       Container(
@@ -126,11 +142,11 @@ class _CustomerAccountPageState extends State<CustomerAccountPage> {
                           color: const Color.fromARGB(255, 2, 65, 4),
                         ),
                         child:
-                            Icon(Icons.devices, size: 24, color: Colors.white),
+                            Icon(Icons.wallet, size: 24, color: Colors.white),
                       ),
                       SizedBox(height: 8),
                       Text(
-                        "Native devices",
+                        "Wallet",
                         style: TextStyle(
                             color: Color.fromARGB(255, 2, 65, 4), fontSize: 14),
                       ),
@@ -139,7 +155,13 @@ class _CustomerAccountPageState extends State<CustomerAccountPage> {
                 ),
                 // Third Button
                 GestureDetector(
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => HelpSupportPage(
+                            )));
+                  },
                   child: Column(
                     children: [
                       Container(
@@ -170,19 +192,31 @@ class _CustomerAccountPageState extends State<CustomerAccountPage> {
             leading: Icon(Icons.subscriptions_outlined),
             title: Text("My Plans"),
             trailing: Icon(Icons.arrow_forward_ios, size: 16),
-            onTap: () {},
+            onTap: () {
+              Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => MyPlansPage(
+                            )));
+            },
           ),
+          // ListTile(
+          //   leading: Icon(Icons.card_membership_outlined),
+          //   title: Text("Plus membership"),
+          //   trailing: Icon(Icons.arrow_forward_ios, size: 16),
+          //   onTap: () {},
+          // ),
           ListTile(
-            leading: Icon(Icons.card_membership_outlined),
-            title: Text("Plus membership"),
+            leading: Icon(Icons.local_offer),
+            title: Text("Offers & Coupons"),
             trailing: Icon(Icons.arrow_forward_ios, size: 16),
-            onTap: () {},
-          ),
-          ListTile(
-            leading: Icon(Icons.stars_outlined),
-            title: Text("My rating"),
-            trailing: Icon(Icons.arrow_forward_ios, size: 16),
-            onTap: () {},
+            onTap: () {
+              Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => OffersCouponsApp(
+                            )));
+            },
           ),
           ListTile(
             leading: Icon(Icons.location_on_outlined),
@@ -194,19 +228,37 @@ class _CustomerAccountPageState extends State<CustomerAccountPage> {
             leading: Icon(Icons.payment_outlined),
             title: Text("Manage payment methods"),
             trailing: Icon(Icons.arrow_forward_ios, size: 16),
-            onTap: () {},
+            onTap: () {
+              Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => PaymentMethodsPage(
+                            )));
+            },
           ),
-          ListTile(
-            leading: Icon(Icons.settings_outlined),
-            title: Text("Settings"),
-            trailing: Icon(Icons.arrow_forward_ios, size: 16),
-            onTap: () {},
-          ),
+           ListTile(
+             leading: Icon(Icons.star),
+             title: Text("Ratings"),
+             trailing: Icon(Icons.arrow_forward_ios, size: 16),
+             onTap: () {
+              Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => RatingsPage(
+                            )));
+             },
+           ),
           ListTile(
             leading: Icon(Icons.info_outline),
-            title: Text("About UC"),
+            title: Text("About Homecrew"),
             trailing: Icon(Icons.arrow_forward_ios, size: 16),
-            onTap: () {},
+            onTap: () {
+              Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => AboutUsPage(
+                            )));
+            },
           ),
 
           ListTile(

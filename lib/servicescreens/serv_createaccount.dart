@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:homecrew/auth/auth_service.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '/consts/rounded_textfield.dart';
 
 final _formKey2 = GlobalKey<FormState>();
@@ -11,7 +13,10 @@ class ServCreateAccount extends StatefulWidget {
 }
 
 class _ServCreateAccountState extends State<ServCreateAccount> {
-  //text controllers
+  final authService = AuthService();
+  final supabase = Supabase.instance.client;
+
+  // Text controllers
   var nameController = TextEditingController();
   var mobController = TextEditingController();
   var emailController = TextEditingController();
@@ -19,42 +24,92 @@ class _ServCreateAccountState extends State<ServCreateAccount> {
   var passwordRetypeController = TextEditingController();
   bool _isLoading = false;
 
+  // List of service categories
+  final List<String> allCategories = [
+    "Plumbing",
+    "Electrical",
+    "Carpentry",
+    "Cleaning",
+    "Painting",
+    "Pest Control"
+  ];
+
+  // Selected categories
+  List<String> selectedCategories = [];
+
+  // Function to handle sign-up
+  void signUp() async {
+    final name = nameController.text;
+    final mobileNo = mobController.text;
+    final email = emailController.text;
+    final password = passwordController.text;
+    final confirmPassword = passwordRetypeController.text;
+
+    if (password != confirmPassword) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Passwords don't match")),
+      );
+      return;
+    }
+
+    if (selectedCategories.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please select at least one category.")),
+      );
+      return;
+    }
+
+    try {
+      await authService.signUpWithEmailPassword(email, password);
+      var uid = AuthService().getCurrentUserId();
+      print(uid);
+
+      // Insert user data into `users` table
+      await supabase.from('users').insert({
+        'uid': uid,
+        'name': name,
+        'password': password,
+        'email': email,
+        'mobile': mobileNo,
+        'role': "Service"
+      });
+
+      // Insert selected categories into `sp_skills` table
+      await supabase.from('sp_skills').insert({
+        'id': uid,
+        'categories': selectedCategories, // JSON format
+      });
+
+      // Navigate back after registration
+      Navigator.pop(context);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text("Error: $e")));
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       extendBodyBehindAppBar: true,
       body: Stack(
         children: [
-          Center(
-            child: SizedBox(
-              height: 1000,
-              width: double.infinity,
-              child: Container(
-                decoration: const BoxDecoration(
-                    //image:DecorationImage(
-                    // image: image)
-                    //fit: BoxFit.cover,
-                    ),
-              ),
-            ),
-          ),
-          Container(
-            color:const Color(0xFF006A4E), // Green color
-          ),
+          Container(color: const Color(0xFF006A4E)), // Green background
           Padding(
-            padding: EdgeInsets.fromLTRB(16, 150, 16, 0),
+            padding: const EdgeInsets.fromLTRB(16, 150, 16, 0),
             child: SingleChildScrollView(
               child: Form(
                 key: _formKey2,
                 child: Column(
                   children: [
-                    Text(
+                    const Text(
                       "Create Account",
                       style: TextStyle(
-                        fontSize: 30,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
+                          fontSize: 30,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white),
                     ),
                     const SizedBox(height: 20),
                     RoundedTextField(
@@ -78,14 +133,16 @@ class _ServCreateAccountState extends State<ServCreateAccount> {
                       keyboardType: TextInputType.emailAddress,
                     ),
                     const SizedBox(height: 20),
+
+                    // Category selection dropdown
+                    _buildCategoryDropdown(),
+
+                    const SizedBox(height: 20),
                     RoundedTextField(
                       label: 'Password',
                       textColor: const Color(0xFF006A4E),
                       controller: passwordController,
                       keyboardType: TextInputType.text,
-                      //validator: validatePassword,
-                      //isObscure: _isSecurePassword,
-                      //suffixIcon: togglePassword(),
                     ),
                     const SizedBox(height: 20),
                     RoundedTextField(
@@ -93,23 +150,16 @@ class _ServCreateAccountState extends State<ServCreateAccount> {
                       textColor: const Color(0xFF006A4E),
                       controller: passwordRetypeController,
                       keyboardType: TextInputType.text,
-                      //validator: ,
-                      //isObscure: _isSecurePassword,
-                      //suffixIcon: togglePassword(),
                     ),
                     const SizedBox(height: 16),
-                    Stack(
-                      children: [
-                        ElevatedButton(
-                          onPressed: () {},
-                          style: ElevatedButton.styleFrom(
-                            foregroundColor: const Color(0xFF006A4E),
-                            backgroundColor: Colors.white,
-                          ),
-                          child: const Text('Confirm'),
-                        ),
-                      ],
-                    )
+                    ElevatedButton(
+                      onPressed: signUp,
+                      style: ElevatedButton.styleFrom(
+                        foregroundColor: const Color(0xFF006A4E),
+                        backgroundColor: Colors.white,
+                      ),
+                      child: const Text('Confirm'),
+                    ),
                   ],
                 ),
               ),
@@ -117,6 +167,45 @@ class _ServCreateAccountState extends State<ServCreateAccount> {
           ),
         ],
       ),
+    );
+  }
+
+  // Dropdown widget with checkboxes
+  Widget _buildCategoryDropdown() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: ExpansionTile(
+            title: Text(
+              selectedCategories.isEmpty
+                  ? "Choose Your Skills"
+                  : selectedCategories.join(", "),
+              style: const TextStyle(fontSize: 16),
+            ),
+            children: allCategories.map((category) {
+              return CheckboxListTile(
+                title: Text(category),
+                value: selectedCategories.contains(category),
+                onChanged: (bool? value) {
+                  setState(() {
+                    if (value == true) {
+                      selectedCategories.add(category);
+                    } else {
+                      selectedCategories.remove(category);
+                    }
+                  });
+                },
+              );
+            }).toList(),
+          ),
+        ),
+      ],
     );
   }
 }
