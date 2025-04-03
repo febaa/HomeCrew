@@ -151,11 +151,17 @@ class _BookingDetailsState extends State<BookingDetails> {
   }
 
   Widget _tableCell(String text) {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Center(child: Text(text)),
-    );
-  }
+  return Padding(
+    padding: EdgeInsets.all(8.0),
+    child: Align(
+      alignment: Alignment.centerLeft, // Left-align text
+      child: Text(
+        text,
+        style: TextStyle(fontSize: 14),
+      ),
+    ),
+  );
+}
 
   Widget _summaryRow(String title, String value) {
     return Padding(

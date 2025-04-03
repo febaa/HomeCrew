@@ -48,6 +48,7 @@ class _CartState extends State<Cart> {
     }
   }
 
+
   Widget getStepUI() {
     switch (currentStep) {
       case 0:
@@ -881,13 +882,16 @@ class _CartState extends State<Cart> {
                                 "CNegotiated": false,
                                 "SNegotiated": false,
                                 "total_amount": calculateTotalForCategory(),
-                                "SAccepted": false
+                                "SAccepted": false,
+                                "status": "pending"
                               };
 
                               // Insert into Supabase
                               final response = await supabase
                                   .from('bookings')
                                   .insert([bookingData]);
+
+                              removeCategoryFromCart(selectedCategory);
 
                               Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => ThankYouPage()));
                             } catch (error) {
@@ -1119,13 +1123,18 @@ class _CartState extends State<Cart> {
                                 "CNegotiated": true,
                                 "SNegotiated": false,
                                 "total_amount": calculateTotalForCategory(),
-                                "SAccepted": false
+                                "SAccepted": false,
+                                "status": "pending"
                               };
 
                               // Insert into Supabase
                               final response = await supabase
                                   .from('bookings')
                                   .insert([bookingData]);
+
+                              removeCategoryFromCart(selectedCategory);
+
+                              
 
                               Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => ThankYouPage()));
                             } catch (error) {
@@ -1137,7 +1146,7 @@ class _CartState extends State<Cart> {
                               );
                             }
                           },
-                      child: Text('Confirm'),
+                      child: Text('Confirm', style: TextStyle(color: Colors.white),),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF006A4E), // Button color
                         padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
@@ -1346,6 +1355,22 @@ class _CartState extends State<Cart> {
     await supabase.from('cart').delete().eq('id', cartId);
     loadCartItems();
   }
+
+
+  Future<void> removeCategoryFromCart(String category) async {
+  if (groupedCartItems.containsKey(category)) {
+    List<int> cartIds = groupedCartItems[category]!
+        .map((item) => item['id'] as int) // Ensure id is int
+        .toList();
+
+    if (cartIds.isNotEmpty) {
+      await supabase.from('cart').delete().filter('id', 'in', cartIds);
+    }
+  }
+  loadCartItems();
+}
+
+
 
   @override
   Widget build(BuildContext context) {
