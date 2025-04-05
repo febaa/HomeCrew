@@ -20,8 +20,11 @@ class _CustomerCreateAccountState extends State<CustomerCreateAccount> {
   var nameController = TextEditingController();
   var mobController = TextEditingController();
   var emailController = TextEditingController();
+  var ageController = TextEditingController();
+  var genderController = TextEditingController();
   var passwordController = TextEditingController();
   var passwordRetypeController = TextEditingController();
+  String? selectedGender;
   bool _isLoading = false;
   
 
@@ -31,6 +34,8 @@ class _CustomerCreateAccountState extends State<CustomerCreateAccount> {
     final name = nameController.text;
     final mobileNo = mobController.text;
     final email = emailController.text;
+    final age = ageController.text;
+    final gender = selectedGender;
     final password = passwordController.text;
     final confirmPassword = passwordRetypeController.text;
 
@@ -52,8 +57,23 @@ class _CustomerCreateAccountState extends State<CustomerCreateAccount> {
         'password': password,
         'email': email,
         'mobile': mobileNo,
-        'role': "Customer"
+        'role': "Customer",
+        'age': age,
+        'gender': gender
       });
+
+      await supabase.from('wallet').insert({
+        'user_id': uid,        
+      });
+
+      await supabase.from('coupons').insert({
+        'name': "First Order",
+        'promocode': "GET21",
+        'detail': "Get ₹21 Off on your First Order",
+        'validity': DateTime.now().add(Duration(days: 7)), // valid for 7 days from now
+        'user_id': uid,
+      });
+
       //pop this register page
       Navigator.pop(context);
     }
@@ -75,7 +95,7 @@ class _CustomerCreateAccountState extends State<CustomerCreateAccount> {
         children: [
           Center(
             child: SizedBox(
-              height: 1000,
+              height: 100,
               width: double.infinity,
               child: Container(
                 decoration: const BoxDecoration(
@@ -90,7 +110,7 @@ class _CustomerCreateAccountState extends State<CustomerCreateAccount> {
             color: const Color(0xFF006A4E),
           ),
           Padding(
-            padding: EdgeInsets.fromLTRB(16, 150, 16, 0),
+            padding: EdgeInsets.fromLTRB(16, 80, 16, 0),
             child: SingleChildScrollView(
               child: Form(
                 key: _formKey2,
@@ -125,6 +145,15 @@ class _CustomerCreateAccountState extends State<CustomerCreateAccount> {
                       controller: emailController,
                       keyboardType: TextInputType.emailAddress,
                     ),
+                    const SizedBox(height: 20),
+                    RoundedTextField(
+                      label: 'Age',
+                      textColor: const Color(0xFF006A4E),
+                      controller: ageController,
+                      keyboardType: TextInputType.number,
+                    ),
+                    const SizedBox(height: 20),
+                    _buildGenderDropdown(),
                     const SizedBox(height: 20),
                     RoundedTextField(
                       label: 'Password',
@@ -167,6 +196,40 @@ class _CustomerCreateAccountState extends State<CustomerCreateAccount> {
       ),
     );
   }
+
+  Widget _buildGenderDropdown() {
+  return DropdownButtonFormField<String>(
+    decoration: InputDecoration(
+      labelText: 'Gender',
+      labelStyle: const TextStyle(color: Color(0xFF006A4E)),
+      filled: true, // Enable filling
+      fillColor: Colors.white, // Set white background
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: Color(0xFF006A4E)),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: Color(0xFF006A4E), width: 2),
+      ),
+    ),
+    value: selectedGender,
+    items: ['Male', 'Female']
+        .map((gender) => DropdownMenuItem(
+              value: gender,
+              child: Text(gender),
+            ))
+        .toList(),
+    onChanged: (value) {
+      setState(() {
+        selectedGender = value!;
+      });
+    },
+    dropdownColor: Colors.white,
+    icon: const Icon(Icons.keyboard_arrow_down_rounded),
+  );
+}
+
 }
 
 //Rounded text field class

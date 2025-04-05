@@ -80,683 +80,712 @@ class _showBookingsState extends State<showBookings> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text("Service Requests")),
-      body: bookings.isEmpty
-          ? Center(
-              child: Text(
-                "No bookings found",
-                style: TextStyle(fontSize: 18, color: Colors.grey),
-              ),
-            )
-          : ListView.builder(
-              padding: EdgeInsets.all(16),
-              itemCount: bookings.length,
-              itemBuilder: (context, index) {
-                final booking = bookings[index];
-
-                return Card(
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-                  margin: EdgeInsets.only(bottom: 16),
-                  elevation: 5,
-                  color: Color.fromARGB(255, 247, 247, 247),
-                  child: ListTile(
-                    title: Text(
-                      "Category: ${booking['category']}",
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    subtitle: 
-                    FutureBuilder(future: fetchOffer(uid, booking), builder: (context, AsyncSnapshot<Map<String, dynamic>?> snapshot) {
-
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return Center(child: CircularProgressIndicator()); // Show loader while fetching
-                    }
-
-                    if (snapshot.hasError) {
-                      return Center(child: Text("Error loading data"));
-                    }
-
-                    final offer = snapshot.data;
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        
-                        Text("Date: ${booking['selected_date']}"),
-                        Text("Time: ${booking['selected_time']}"),
-                        Text("Asking Price: ₹${offer != null ? offer['asking_price'] : booking['asking_price']}"),
-                        SizedBox(height: 16),
-
-                                
-                                Column(
-  crossAxisAlignment: CrossAxisAlignment.start,
-  children: [
-    // Conditional Text Message
-    Text(
-  () {
-    if (offer!=null && offer['accepted'] == true && offer['negotiated']==false) {
-      return "You have accepted this booking, please wait until the customer makes payment and confirms the booking.";
-    } else if (offer != null && offer['negotiated'] == false) {
-      return "Your negotiated offer has been forwarded to the customer, please wait until the customer responds.";
-    } else if (offer != null && offer['negotiated'] == true) {
-      return "Customer has made a counter offer.";
-    } else if (offer == null && booking["CNegotiated"] == false) {
-      return "Customer has posted request on MRP, so negotiation is not allowed.";
-    } else {
-      return "You can negotiate to increase the price.";
-    }
-  }(),
-  style: TextStyle(
-    fontSize: 14,
-    fontWeight: FontWeight.bold,
-    color: Colors.grey[700],
-  ),
-),
-    SizedBox(height: 10), // Spacing between text and buttons
-
-    // Conditional Buttons
-    Row(
-      mainAxisAlignment: MainAxisAlignment.start,
-      children: [
-      if(offer!=null && offer['accepted'] == true && offer['negotiated']==false)...[
-
-      ]
-      else if (offer != null && offer['negotiated'] == false)...[]
-      else if(offer == null && booking["CNegotiated"] == false)...[
+      body: RefreshIndicator(
+        onRefresh: fetchServiceProviderSkills,
+        child: bookings.isEmpty
+            ? Center(
+                child: Text(
+                  "No bookings found",
+                  style: TextStyle(fontSize: 18, color: Colors.grey),
+                ),
+              )
+            : ListView.builder(
+                padding: EdgeInsets.all(16),
+                itemCount: bookings.length,
+                itemBuilder: (context, index) {
+                  final booking = bookings[index];
+        
+                  return Card(
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                    margin: EdgeInsets.only(bottom: 16),
+                    elevation: 5,
+                    color: Color.fromARGB(255, 247, 247, 247),
+                    child: ListTile(
+                      title: Text(
+                        "Category: ${booking['category']}",
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      subtitle: 
+                      FutureBuilder(future: fetchOffer(uid, booking), builder: (context, AsyncSnapshot<Map<String, dynamic>?> snapshot) {
+        
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return Center(child: CircularProgressIndicator()); // Show loader while fetching
+                      }
+        
+                      if (snapshot.hasError) {
+                        return Center(child: Text("Error loading data"));
+                      }
+        
+                      final offer = snapshot.data;
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          
+                          Text("Date: ${booking['selected_date']}"),
+                          Text("Time: ${booking['selected_time']}"),
+                          Text("Asking Price: ₹${offer != null ? offer['asking_price'] : booking['asking_price']}"),
+                          SizedBox(height: 16),
+        
+                                  
+                                  Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Conditional Text Message
+            Text(
+          () {
+            if (offer!=null && offer['accepted'] == true && offer['negotiated']==false) {
+        return "You have accepted this booking, please wait until the customer makes payment and confirms the booking.";
+            } else if (offer != null && offer['negotiated'] == false) {
+        return "Your negotiated offer has been forwarded to the customer, please wait until the customer responds.";
+            } else if (offer != null && offer['negotiated'] == true) {
+        return "Customer has made a counter offer.";
+            } else if (offer == null && booking["CNegotiated"] == false) {
+        return "Customer has posted request on MRP, so negotiation is not allowed.";
+            } else {
+        return "You can negotiate to increase the price.";
+            }
+          }(),
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+            color: Colors.grey[700],
+          ),
+        ),
+            SizedBox(height: 10), // Spacing between text and buttons
+        
+            // Conditional Buttons
+            Row(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+        if(offer!=null && offer['accepted'] == true && offer['negotiated']==false)...[
+        
+        ]
+        else if (offer != null && offer['negotiated'] == false)...[]
+        else if(offer == null && booking["CNegotiated"] == false)...[
+                ElevatedButton(
+          onPressed: () async {
+        
+        await supabase.from('offers').insert({
+          'service_provider_id': uid,
+          'asking_price': booking["asking_price"],
+          'accepted': true,
+          'booking_id': booking['id'],
+          'negotiated': false
+        });
+        
+        await supabase
+          .from('bookings')
+          .update({'SAccepted': true})
+          .eq('id', booking['id']);
+        
+          await supabase.from('notifications').insert({
+                                                          'user_id': booking['user_id'],
+                                                          'title': "Offer Accepted by a Service Provider",
+                                                          'subtitle': "Your offer was accepted by a service provider, please accept and pay."
+                                                        });
+        
+        fetchBookings();
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("Offer accepted successfully!")),
+          );
+        
+          },
+          child: Text(
+            'Accept',
+            style: TextStyle(color: Colors.white),
+          ),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Color(0xFF388E3C),
+            padding: EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+            textStyle: TextStyle(
+        fontSize: 16,
+        fontWeight: FontWeight.bold,
+            ),
+            shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(15),
+            ),
+          ),
+        ),
+              ]
+            else if (offer != null && offer['negotiated'] == true)...[
+        
+        
+        
+        
+        
+        
               ElevatedButton(
-  onPressed: () async {
-
-      await supabase.from('offers').insert({
-        'service_provider_id': uid,
-        'asking_price': booking["asking_price"],
-        'accepted': true,
-        'booking_id': booking['id'],
-        'negotiated': false
-      });
-
-      await supabase
-        .from('bookings')
-        .update({'SAccepted': true})
-        .eq('id', booking['id']);
-
-      fetchBookings();
-
-      ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Offer accepted successfully!")),
-        );
-
-  },
-  child: Text(
-    'Accept',
-    style: TextStyle(color: Colors.white),
-  ),
-  style: ElevatedButton.styleFrom(
-    backgroundColor: Color(0xFF388E3C),
-    padding: EdgeInsets.symmetric(vertical: 12, horizontal: 20),
-    textStyle: TextStyle(
-      fontSize: 16,
-      fontWeight: FontWeight.bold,
-    ),
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(15),
-    ),
-  ),
-),
-            ]
-          else if (offer != null && offer['negotiated'] == true)...[
-
-
-
-
-
-
-            ElevatedButton(
-                onPressed: () async {
-
-                  await supabase.from('offers').update({
-                    'accepted': true,
-                    'negotiated': false
-                  }).eq('booking_id', booking['id']);
-
-                  await supabase
-                    .from('bookings')
-                    .update({'SAccepted': true})
-                    .eq('id', booking['id']);
-
-                  fetchBookings();
-
-                  ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text("Offer accepted, wait for the customer to confirm")),
-                    );
-
-              },
-                            child: Text(
-                              'Accept',
-                              style: TextStyle(color: Colors.white),
-                            ),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Color(0xFF006A4E),
-                              padding: EdgeInsets.symmetric(vertical: 12, horizontal: 20),
-                              textStyle: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
+                  onPressed: () async {
+        
+                    await supabase.from('offers').update({
+                      'accepted': true,
+                      'negotiated': false
+                    }).eq('service_provider_id', uid);
+        
+                    await supabase
+                      .from('bookings')
+                      .update({'SAccepted': true})
+                      .eq('id', booking['id']);
+        
+                      await supabase.from('notifications').insert({
+                                                          'user_id': booking['user_id'],
+                                                          'title': "Offer Accepted by a Service Provider",
+                                                          'subtitle': "Your offer was accepted by a service provider, please accept and pay."
+                                                        });
+        
+                    fetchBookings();
+        
+                    ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text("Offer accepted, wait for the customer to confirm")),
+                      );
+        
+                },
+                              child: Text(
+                                'Accept',
+                                style: TextStyle(color: Colors.white),
                               ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(15),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Color(0xFF006A4E),
+                                padding: EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+                                textStyle: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(15),
+                                ),
                               ),
                             ),
-                          ),
-
-                          SizedBox(width: 10),
-
-                          ElevatedButton(
-                            onPressed: () {
-                              
-                              if (offer['offercount'] >= 4) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text("Negotiation Limit Reached"),
-                                        duration: Duration(seconds: 2),
+        
+                            SizedBox(width: 10),
+        
+                            ElevatedButton(
+                              onPressed: () {
+                                
+                                if (offer['offercount'] >= 4) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                          content: Text("Negotiation Limit Reached"),
+                                          duration: Duration(seconds: 2),
+                                        ),
+                                      );
+                                      return; // Stop execution if limit is reached
+                                    }
+        
+        
+        
+                                currentAmount = offer['asking_price'];
+                                _negotiateController.text = currentAmount.toStringAsFixed(2);
+        
+        
+        
+                                // Handle Negotiate action
+                                showDialog(
+                                  context: context,
+                                  builder: (BuildContext context) {
+                                    return Dialog(
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(16), // Rounded corners
                                       ),
-                                    );
-                                    return; // Stop execution if limit is reached
-                                  }
-
-
-
-                              currentAmount = offer['asking_price'];
-                              _negotiateController.text = currentAmount.toStringAsFixed(2);
-
-
-
-                              // Handle Negotiate action
-                              showDialog(
-                                context: context,
-                                builder: (BuildContext context) {
-                                  return Dialog(
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(16), // Rounded corners
-                                    ),
-                                    elevation: 16,
-                                    backgroundColor: Colors.white,
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(16.0),
-                                      child: Column(
-                                        mainAxisSize: MainAxisSize.min,
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          // Title
-                                          Text(
-                                            'Negotiate Price',
-                                            style: TextStyle(
-                                              fontSize: 24,
-                                              fontWeight: FontWeight.bold,
-                                              color: const Color(0xFF006A4E),
-                                            ),
-                                          ),
-                                          SizedBox(height: 16),
-
-                                          // Displaying the initial amount
-                                          Text(
-                                            'Current Asking Price: ₹${booking['asking_price']}',
-                                            style: TextStyle(
-                                              fontSize: 18,
-                                              color: Colors.black87,
-                                            ),
-                                          ),
-                                          SizedBox(height: 16),
-
-                                          // Row with + and - buttons on the sides of the text field
-                                          Row(
-                                            mainAxisAlignment: MainAxisAlignment.center,
-                                            children: [
-                                              // Decrease Button
-                                              GestureDetector(
-                                                onTap: () {
-                                                  setState(() {
-                                                    currentAmount = (currentAmount - 10).clamp(booking['asking_price'] as double, 50000).toDouble();
-                                                    _negotiateController.text = currentAmount.toStringAsFixed(2);
-                                                  });
-                                                },
-                                                child: Container(
-                                                  padding: EdgeInsets.all(12),
-                                                  decoration: BoxDecoration(
-                                                    color: const Color(0xFF006A4E),
-                                                    borderRadius: BorderRadius.circular(8),
-                                                  ),
-                                                  child: Icon(Icons.remove, color: Colors.white, size: 24),
-                                                ),
+                                      elevation: 16,
+                                      backgroundColor: Colors.white,
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(16.0),
+                                        child: Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            // Title
+                                            Text(
+                                              'Negotiate Price',
+                                              style: TextStyle(
+                                                fontSize: 24,
+                                                fontWeight: FontWeight.bold,
+                                                color: const Color(0xFF006A4E),
                                               ),
-                                              SizedBox(width: 16),
-
-                                              // TextField for Negotiated Amount
-                                              Container(
-                                                width: 120, // Reduced width for the text field
-                                                child: TextField(
-                                                  controller: _negotiateController,
-                                                  keyboardType: TextInputType.number,
-                                                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                                                  decoration: InputDecoration(
-                                                    labelText: 'Negotiated',
-                                                    labelStyle: TextStyle(color: const Color(0xFF006A4E),),
-                                                    border: OutlineInputBorder(
-                                                      borderRadius: BorderRadius.circular(8),
-                                                    ),
-                                                    contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                                                  ),
-                                                  textAlign: TextAlign.center,
-                                                  onChanged: (value) {
+                                            ),
+                                            SizedBox(height: 16),
+        
+                                            // Displaying the initial amount
+                                            Text(
+                                              'Current Asking Price: ₹${booking['asking_price']}',
+                                              style: TextStyle(
+                                                fontSize: 18,
+                                                color: Colors.black87,
+                                              ),
+                                            ),
+                                            SizedBox(height: 16),
+        
+                                            // Row with + and - buttons on the sides of the text field
+                                            Row(
+                                              mainAxisAlignment: MainAxisAlignment.center,
+                                              children: [
+                                                // Decrease Button
+                                                GestureDetector(
+                                                  onTap: () {
                                                     setState(() {
-                                                      currentAmount = double.tryParse(value) ?? 0; // Update current amount
+                                                      currentAmount = (currentAmount - 10).clamp(booking['asking_price'] as double, 50000).toDouble();
+                                                      _negotiateController.text = currentAmount.toStringAsFixed(2);
                                                     });
                                                   },
-                                                ),
-                                              ),
-                                              SizedBox(width: 16),
-
-                                              // Increase Button
-                                              GestureDetector(
-                                                onTap: () {
-                                                  setState(() {
-                                                    currentAmount = (currentAmount + 10).clamp(booking['asking_price'] as double, 5000).toDouble();
-                                                    _negotiateController.text = currentAmount.toStringAsFixed(2);
-                                                  });
-                                                },
-                                                child: Container(
-                                                  padding: EdgeInsets.all(12),
-                                                  decoration: BoxDecoration(
-                                                    color: const Color(0xFF006A4E),
-                                                    borderRadius: BorderRadius.circular(8),
-                                                  ),
-                                                  child: Icon(Icons.add, color: Colors.white, size: 24),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                          SizedBox(height: 16),
-
-                                          // Display the updated negotiated amount
-                                          Text(
-                                            'Negotiated Amount: ₹${currentAmount.toStringAsFixed(2)}',
-                                            style: TextStyle(
-                                              fontSize: 20,
-                                              fontWeight: FontWeight.bold,
-                                              color: const Color(0xFF006A4E),
-                                            ),
-                                          ),
-                                          SizedBox(height: 24),
-
-                                          // Buttons at the bottom
-                                          Row(
-                                            mainAxisAlignment: MainAxisAlignment.end,
-                                            children: [
-                                              // Cancel button
-                                              TextButton(
-                                                onPressed: () {
-                                                  Navigator.pop(context); // Close the dialog
-                                                },
-                                                child: Text(
-                                                  'Cancel',
-                                                  style: TextStyle(
-                                                    color: Colors.grey[700],
-                                                    fontSize: 16,
+                                                  child: Container(
+                                                    padding: EdgeInsets.all(12),
+                                                    decoration: BoxDecoration(
+                                                      color: const Color(0xFF006A4E),
+                                                      borderRadius: BorderRadius.circular(8),
+                                                    ),
+                                                    child: Icon(Icons.remove, color: Colors.white, size: 24),
                                                   ),
                                                 ),
-                                              ),
-                                              SizedBox(width: 16),
-
-                                              // Confirm button
-                                              ElevatedButton(
-                                                onPressed: () async {
-                                                      await supabase.from('offers').update({
-                                                        'asking_price': currentAmount,
-                                                        'negotiated': false
-                                                      }).eq('booking_id', booking['id']);
-                                                      
-                                                      await supabase.from('bookings').update({'SNegotiated': true}).eq('id', booking['id']);
-
-                                                      await supabase.from('offers').update({
-                                                          'offercount': supabase.from('offers').select('offercount').eq('id', offer['id']).single().then((res) => res['offercount'] + 1)
-                                                        }).eq('id', offer['id']);
-
-                                                      fetchBookings();
-                                                      
-                                                      Navigator.pop(context);
-                                                      ScaffoldMessenger.of(context).showSnackBar(
-                                                        SnackBar(content: Text("Offer accepted successfully!")),
-                                                      );
+                                                SizedBox(width: 16),
+        
+                                                // TextField for Negotiated Amount
+                                                Container(
+                                                  width: 120, // Reduced width for the text field
+                                                  child: TextField(
+                                                    controller: _negotiateController,
+                                                    keyboardType: TextInputType.number,
+                                                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                                                    decoration: InputDecoration(
+                                                      labelText: 'Negotiated',
+                                                      labelStyle: TextStyle(color: const Color(0xFF006A4E),),
+                                                      border: OutlineInputBorder(
+                                                        borderRadius: BorderRadius.circular(8),
+                                                      ),
+                                                      contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                                    ),
+                                                    textAlign: TextAlign.center,
+                                                    onChanged: (value) {
+                                                      setState(() {
+                                                        currentAmount = double.tryParse(value) ?? 0; // Update current amount
+                                                      });
                                                     },
-                                                child: Text('Confirm',style: TextStyle(color: Colors.white),),
-                                                style: ElevatedButton.styleFrom(
-                                                  backgroundColor: const Color(0xFF006A4E), // Button color
-                                                  padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                                                  textStyle: TextStyle(
-                                                    fontSize: 16,
-                                                    fontWeight: FontWeight.bold,
                                                   ),
                                                 ),
+                                                SizedBox(width: 16),
+        
+                                                // Increase Button
+                                                GestureDetector(
+                                                  onTap: () {
+                                                    setState(() {
+                                                      currentAmount = (currentAmount + 10).clamp(booking['asking_price'] as double, 5000).toDouble();
+                                                      _negotiateController.text = currentAmount.toStringAsFixed(2);
+                                                    });
+                                                  },
+                                                  child: Container(
+                                                    padding: EdgeInsets.all(12),
+                                                    decoration: BoxDecoration(
+                                                      color: const Color(0xFF006A4E),
+                                                      borderRadius: BorderRadius.circular(8),
+                                                    ),
+                                                    child: Icon(Icons.add, color: Colors.white, size: 24),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                            SizedBox(height: 16),
+        
+                                            // Display the updated negotiated amount
+                                            Text(
+                                              'Negotiated Amount: ₹${currentAmount.toStringAsFixed(2)}',
+                                              style: TextStyle(
+                                                fontSize: 20,
+                                                fontWeight: FontWeight.bold,
+                                                color: const Color(0xFF006A4E),
                                               ),
-                                            ],
-                                          ),
-                                        ],
+                                            ),
+                                            SizedBox(height: 24),
+        
+                                            // Buttons at the bottom
+                                            Row(
+                                              mainAxisAlignment: MainAxisAlignment.end,
+                                              children: [
+                                                // Cancel button
+                                                TextButton(
+                                                  onPressed: () {
+                                                    Navigator.pop(context); // Close the dialog
+                                                  },
+                                                  child: Text(
+                                                    'Cancel',
+                                                    style: TextStyle(
+                                                      color: Colors.grey[700],
+                                                      fontSize: 16,
+                                                    ),
+                                                  ),
+                                                ),
+                                                SizedBox(width: 16),
+        
+                                                // Confirm button
+                                                ElevatedButton(
+                                                  onPressed: () async {
+                                                        await supabase.from('offers').update({
+                                                          'asking_price': currentAmount,
+                                                          'negotiated': false,
+                                                          'offercount': 3
+                                                        }).eq('service_provider_id', uid);
+                                                        
+                                                        await supabase.from('bookings').update({'SNegotiated': true}).eq('id', booking['id']);
+        
+                                                        await supabase.from('notifications').insert({
+                                                          'user_id': booking['user_id'],
+                                                          'title': "Offer Negotiated by a Service Provider",
+                                                          'subtitle': "Your offer was negotiated by a service provider, please check your bookings."
+                                                        });
+        
+        
+                                                        fetchBookings();
+                                                        
+                                                        Navigator.pop(context);
+                                                        ScaffoldMessenger.of(context).showSnackBar(
+                                                          SnackBar(content: Text("Offer accepted successfully!")),
+                                                        );
+                                                      },
+                                                  child: Text('Confirm',style: TextStyle(color: Colors.white),),
+                                                  style: ElevatedButton.styleFrom(
+                                                    backgroundColor: const Color(0xFF006A4E), // Button color
+                                                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                                                    textStyle: TextStyle(
+                                                      fontSize: 16,
+                                                      fontWeight: FontWeight.bold,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ],
+                                        ),
                                       ),
-                                    ),
-                                  );
-                                },
-                              );
-
-                            }, 
-                            child: Text('Negotiate', style: TextStyle(color: Colors.white),),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Color(0xFF006A4E),
-                              padding: EdgeInsets.symmetric(vertical: 12, horizontal: 20),
-                              textStyle: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(15),
+                                    );
+                                  },
+                                );
+        
+                              }, 
+                              child: Text('Negotiate', style: TextStyle(color: Colors.white),),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Color(0xFF006A4E),
+                                padding: EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+                                textStyle: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(15),
+                                ),
                               ),
                             ),
-                          ),
-                          
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-          ]
-
-
-          
-
-
-
-
-          else...[
-              ElevatedButton(
-                onPressed: () async {
-
-      await supabase.from('offers').insert({
-        'service_provider_id': uid,
-        'asking_price': booking["asking_price"],
-        'accepted': true,
-        'booking_id': booking['id'],
-        'negotiated': false
-      });
-
-      await supabase
-        .from('bookings')
-        .update({'SAccepted': true})
-        .eq('id', booking['id']);
-
-      fetchBookings();
-
-      ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Offer accepted successfully!")),
-        );
-
-  },
-                child: Text(
-                  'Accept',
-                  style: TextStyle(color: Colors.white),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Color(0xFF006A4E),
-                  padding: EdgeInsets.symmetric(vertical: 12, horizontal: 20),
-                  textStyle: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
+                            
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+            ]
+        
+        
+            
+        
+        
+        
+        
+            else...[
+                ElevatedButton(
+                  onPressed: () async {
+        
+        await supabase.from('offers').insert({
+          'service_provider_id': uid,
+          'asking_price': booking["asking_price"],
+          'accepted': true,
+          'booking_id': booking['id'],
+          'negotiated': false
+        });
+        
+        await supabase
+          .from('bookings')
+          .update({'SAccepted': true})
+          .eq('id', booking['id']);
+        
+          await supabase.from('notifications').insert({
+                                                          'user_id': booking['user_id'],
+                                                          'title': "Offer Accepted by a Service Provider",
+                                                          'subtitle': "Your offer was accepted by a service provider, please accept and pay."
+                                                        });
+        
+        fetchBookings();
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("Offer accepted successfully!")),
+          );
+        
+          },
+                  child: Text(
+                    'Accept',
+                    style: TextStyle(color: Colors.white),
                   ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(15),
-                  ),
-                ),
-              ),
-              SizedBox(width: 10),
-              ElevatedButton(
-                onPressed: () async {
-
-
-
-
-
-
-                  currentAmount = booking['asking_price'];
-                  _negotiateController.text = currentAmount.toStringAsFixed(2);
-
-
-
-
-
-
-
-
-
-
-                  // Handle Negotiate action
-                  showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return Dialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16), // Rounded corners
-          ),
-          elevation: 16,
-          backgroundColor: Colors.white,
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Title
-                Text(
-                  'Negotiate Price',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: const Color(0xFF006A4E),
-                  ),
-                ),
-                SizedBox(height: 16),
-
-                // Displaying the initial amount
-                Text(
-                  'Current Asking Price: ₹${booking['asking_price']}',
-                  style: TextStyle(
-                    fontSize: 18,
-                    color: Colors.black87,
-                  ),
-                ),
-                SizedBox(height: 16),
-
-                // Row with + and - buttons on the sides of the text field
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // Decrease Button
-                    GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          currentAmount = (currentAmount - 10).clamp(booking['asking_price'] as double, 50000).toDouble();
-                          _negotiateController.text = currentAmount.toStringAsFixed(2);
-                        });
-                      },
-                      child: Container(
-                        padding: EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF006A4E),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Icon(Icons.remove, color: Colors.white, size: 24),
-                      ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Color(0xFF006A4E),
+                    padding: EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+                    textStyle: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
                     ),
-                    SizedBox(width: 16),
-
-                    // TextField for Negotiated Amount
-                    Container(
-                      width: 120, // Reduced width for the text field
-                      child: TextField(
-                        controller: _negotiateController,
-                        keyboardType: TextInputType.number,
-                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                        decoration: InputDecoration(
-                          labelText: 'Negotiated',
-                          labelStyle: TextStyle(color: const Color(0xFF006A4E),),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                        ),
-                        textAlign: TextAlign.center,
-                        onChanged: (value) {
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                  ),
+                ),
+                SizedBox(width: 10),
+                ElevatedButton(
+                  onPressed: () async {
+        
+        
+        
+        
+        
+        
+                    currentAmount = booking['asking_price'];
+                    _negotiateController.text = currentAmount.toStringAsFixed(2);
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+                    // Handle Negotiate action
+                    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return Dialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16), // Rounded corners
+            ),
+            elevation: 16,
+            backgroundColor: Colors.white,
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Title
+                  Text(
+                    'Negotiate Price',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: const Color(0xFF006A4E),
+                    ),
+                  ),
+                  SizedBox(height: 16),
+        
+                  // Displaying the initial amount
+                  Text(
+                    'Current Asking Price: ₹${booking['asking_price']}',
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: Colors.black87,
+                    ),
+                  ),
+                  SizedBox(height: 16),
+        
+                  // Row with + and - buttons on the sides of the text field
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // Decrease Button
+                      GestureDetector(
+                        onTap: () {
                           setState(() {
-                            currentAmount = double.tryParse(value) ?? 0; // Update current amount
+                            currentAmount = (currentAmount - 10).clamp(booking['asking_price'] as double, 50000).toDouble();
+                            _negotiateController.text = currentAmount.toStringAsFixed(2);
                           });
                         },
-                      ),
-                    ),
-                    SizedBox(width: 16),
-
-                    // Increase Button
-                    GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          currentAmount = (currentAmount + 10).clamp(booking['asking_price'] as double, 5000).toDouble();
-                          _negotiateController.text = currentAmount.toStringAsFixed(2);
-                        });
-                      },
-                      child: Container(
-                        padding: EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF006A4E),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Icon(Icons.add, color: Colors.white, size: 24),
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(height: 16),
-
-                // Display the updated negotiated amount
-                Text(
-                  'Negotiated Amount: ₹${currentAmount.toStringAsFixed(2)}',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: const Color(0xFF006A4E),
-                  ),
-                ),
-                SizedBox(height: 24),
-
-                // Buttons at the bottom
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    // Cancel button
-                    TextButton(
-                      onPressed: () {
-                        Navigator.pop(context); // Close the dialog
-                      },
-                      child: Text(
-                        'Cancel',
-                        style: TextStyle(
-                          color: Colors.grey[700],
-                          fontSize: 16,
+                        child: Container(
+                          padding: EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF006A4E),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Icon(Icons.remove, color: Colors.white, size: 24),
                         ),
                       ),
-                    ),
-                    SizedBox(width: 16),
-
-                    // Confirm button
-                    ElevatedButton(
-                      onPressed: () async {
-                            
-                            await supabase.from('offers').insert({
-                              'service_provider_id': uid,
-                              'asking_price': currentAmount,
-                              'accepted': false,
-                              'booking_id': booking['id'],
-                              'negotiated': false,
-                              'offercount': 1
+                      SizedBox(width: 16),
+        
+                      // TextField for Negotiated Amount
+                      Container(
+                        width: 120, // Reduced width for the text field
+                        child: TextField(
+                          controller: _negotiateController,
+                          keyboardType: TextInputType.number,
+                          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                          decoration: InputDecoration(
+                            labelText: 'Negotiated',
+                            labelStyle: TextStyle(color: const Color(0xFF006A4E),),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          ),
+                          textAlign: TextAlign.center,
+                          onChanged: (value) {
+                            setState(() {
+                              currentAmount = double.tryParse(value) ?? 0; // Update current amount
                             });
-
-                            await supabase.from('bookings').update({'SNegotiated': true}).eq('id', booking['id']);
-                            
-                            
-
-                            fetchBookings();
-                            
-                            Navigator.pop(context);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text("Offer accepted successfully!")),
-                            );
                           },
-                      child: Text('Confirm',style: TextStyle(color: Colors.white),),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF006A4E), // Button color
-                        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                        textStyle: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
                         ),
                       ),
+                      SizedBox(width: 16),
+        
+                      // Increase Button
+                      GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            currentAmount = (currentAmount + 10).clamp(booking['asking_price'] as double, 5000).toDouble();
+                            _negotiateController.text = currentAmount.toStringAsFixed(2);
+                          });
+                        },
+                        child: Container(
+                          padding: EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF006A4E),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Icon(Icons.add, color: Colors.white, size: 24),
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 16),
+        
+                  // Display the updated negotiated amount
+                  Text(
+                    'Negotiated Amount: ₹${currentAmount.toStringAsFixed(2)}',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: const Color(0xFF006A4E),
                     ),
-                  ],
+                  ),
+                  SizedBox(height: 24),
+        
+                  // Buttons at the bottom
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      // Cancel button
+                      TextButton(
+                        onPressed: () {
+                          Navigator.pop(context); // Close the dialog
+                        },
+                        child: Text(
+                          'Cancel',
+                          style: TextStyle(
+                            color: Colors.grey[700],
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
+                      SizedBox(width: 16),
+        
+                      // Confirm button
+                      ElevatedButton(
+                        onPressed: () async {
+                              
+                              await supabase.from('offers').insert({
+                                'service_provider_id': uid,
+                                'asking_price': currentAmount,
+                                'accepted': false,
+                                'booking_id': booking['id'],
+                                'negotiated': false,
+                                'offercount': 1
+                              });
+        
+                              await supabase.from('bookings').update({'SNegotiated': true}).eq('id', booking['id']);
+                              
+                              await supabase.from('notifications').insert({
+                                                          'user_id': booking['user_id'],
+                                                          'title': "Offer Negotiated by a Service Provider",
+                                                          'subtitle': "Your offer was negotiated by a service provider, please check your bookings."
+                                                        });
+        
+                              fetchBookings();
+                              
+                              Navigator.pop(context);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text("Offer accepted successfully!")),
+                              );
+                            },
+                        child: Text('Confirm',style: TextStyle(color: Colors.white),),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF006A4E), // Button color
+                          padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                          textStyle: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+            );
+                  },
+                  child: Text(
+                    'Negotiate',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Color(0xFF006A4E),
+                    padding: EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+                    textStyle: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                  ),
                 ),
               ],
+        ]
             ),
-          ),
-        );
-      },
-    );
+          ],
+        )
+                        ],
+                      );
+                      }),
+                      trailing: Icon(Icons.arrow_forward_ios),
+                      onTap: () {
+        
+                        Navigator.of(context).push(MaterialPageRoute(
+                            builder: (context) => SPBookingDetails(booking: booking),
+                          ),);
+        
+                        
+                      },
+                    ),
+                  );
                 },
-                child: Text(
-                  'Negotiate',
-                  style: TextStyle(color: Colors.white),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Color(0xFF006A4E),
-                  padding: EdgeInsets.symmetric(vertical: 12, horizontal: 20),
-                  textStyle: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(15),
-                  ),
-                ),
               ),
-            ],
-      ]
-    ),
-  ],
-)
-                      ],
-                    );
-                    }),
-                    trailing: Icon(Icons.arrow_forward_ios),
-                    onTap: () {
-
-                      Navigator.of(context).push(MaterialPageRoute(
-                          builder: (context) => SPBookingDetails(booking: booking),
-                        ),);
-
-                      
-                    },
-                  ),
-                );
-              },
-            ),
+      ),
     );
   }
 }

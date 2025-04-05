@@ -7,6 +7,7 @@ import 'package:homecrew/customerscreens/myplans.dart';
 import 'package:homecrew/customerscreens/offers&coupons.dart';
 import 'package:homecrew/customerscreens/paymentmethod.dart';
 import 'package:homecrew/customerscreens/ratings.dart';
+import 'package:homecrew/customerscreens/wallet.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class CustomerAccountPage extends StatefulWidget {
@@ -132,7 +133,9 @@ class _CustomerAccountPageState extends State<CustomerAccountPage> {
                 ),
                 // Second Button
                 GestureDetector(
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.of(context).push(MaterialPageRoute(builder: (_) => Wallet()));
+                  },
                   child: Column(
                     children: [
                       Container(
@@ -214,7 +217,7 @@ class _CustomerAccountPageState extends State<CustomerAccountPage> {
               Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (context) => OffersCouponsApp(
+                        builder: (context) => OffersCouponsPage(
                             )));
             },
           ),

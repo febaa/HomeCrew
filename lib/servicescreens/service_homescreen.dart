@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:homecrew/auth/auth_service.dart';
+import 'package:homecrew/customerscreens/Notifications.dart';
 import 'package:homecrew/servicescreens/showBookings.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class ServiceHomescreen extends StatefulWidget {
   const ServiceHomescreen({super.key});
@@ -9,13 +12,53 @@ class ServiceHomescreen extends StatefulWidget {
 }
 
 class _ServiceHomescreenState extends State<ServiceHomescreen> {
+  final authService = AuthService();
+  late String uid;
+  final supabase = Supabase.instance.client;
+  String name = "";
+
+  @override
+  void initState() {
+    super.initState();
+    uid = authService.getCurrentUserId()!; // Get current user ID
+    fetchUserDetails();
+  }
+
+  Future<void> fetchUserDetails() async {
+    try {
+      final response = await supabase
+          .from('users') // Replace 'users' with your table name
+          .select('name') // Select the desired columns
+          .eq('uid', uid) // Filter by UID
+          .single(); // Fetch a single row
+
+      if (response != null) {
+        setState(() {
+          name = response['name'] ?? 'No Name';
+          //mobile = response['mobile'] ?? 0;
+        });
+      } else {
+        setState(() {
+          name = "Not Found";
+        });
+      }
+    } catch (error) {
+      setState(() {
+        name = "Error";
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error fetching user details: $error')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: Scaffold(
         appBar: PreferredSize(
-          preferredSize: const Size.fromHeight(150),
+          preferredSize: const Size.fromHeight(75),
           child: AppBar(
             backgroundColor: const Color(0xFF006A4E),
             elevation: 0,
@@ -26,54 +69,23 @@ class _ServiceHomescreenState extends State<ServiceHomescreen> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Text(
-                    'Hello, Service Provider',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                    ),
-                  ),
-                  const SizedBox(height: 5),
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Text(
-                        'Mumbai, 400001',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      SizedBox(width: 5),
-                      Icon(
-                        Icons.location_on,
+                      'Hello, ' + name,
+                      style: const TextStyle(
                         color: Colors.white,
-                        size: 20,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold
                       ),
-                    ],
-                  ),
+                    ),
                   const SizedBox(height: 15),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: const TextField(
-                      decoration: InputDecoration(
-                        icon: Icon(Icons.search, color: Colors.grey),
-                        hintText: 'What service are you looking for?',
-                        border: InputBorder.none,
-                      ),
-                    ),
-                  ),
                 ],
               ),
             ),
             actions: [
               TextButton(
-                onPressed: () {},
-                child: const Icon(Icons.shopping_cart, color: Colors.white),
+                onPressed: () {
+                  Navigator.of(context).push(MaterialPageRoute(builder: (_) => NotificationsPage()));
+                },
+                child: const Icon(Icons.notifications, color: Colors.white),
               ),
             ],
           ),

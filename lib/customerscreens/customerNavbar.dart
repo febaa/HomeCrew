@@ -4,6 +4,7 @@ import 'package:homecrew/customerscreens/cart.dart';
 import 'package:homecrew/customerscreens/customer_bookings.dart';
 import 'package:homecrew/customerscreens/customer_homescreen.dart';
 import 'package:homecrew/customerscreens/my_account.dart';
+import 'package:homecrew/customerscreens/requestsTab.dart';
 
 class CustomerNavbar extends StatefulWidget {
   final int page;
@@ -26,7 +27,7 @@ class _CustomerNavbarState extends State<CustomerNavbar> {
   Widget build(BuildContext context) {
     final List<Widget> pages = [
       CustomerHomePage(),
-      Bookings(),
+      RequestTabsScreen(0),
       Cart(),
       CustomerAccountPage()
     ];

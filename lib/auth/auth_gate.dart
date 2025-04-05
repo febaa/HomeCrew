@@ -92,9 +92,6 @@ class _AuthGateState extends State<AuthGate> {
               // Role mismatch, log out immediately and show error screen
               WidgetsBinding.instance.addPostFrameCallback((_) async {
                 await Supabase.instance.client.auth.signOut();
-                setState(() {
-                  errorMessage = "Incorrect account type. Please sign in as a ${widget.login}.";
-                });
               });
               return _showErrorScreen(errorMessage);
             }
@@ -107,7 +104,7 @@ class _AuthGateState extends State<AuthGate> {
         }
 
         // Case 4: Error handling for no valid session and direct == false
-        if (session == null && widget.direct == false) {
+        if (session == null && widget.direct == false && widget.login == null) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             setState(() {
               errorMessage =  "No ${widget.login} Account Found";
@@ -115,6 +112,7 @@ class _AuthGateState extends State<AuthGate> {
           });
           return _showErrorScreen(errorMessage);
         }
+
 
         // Default to CustomerOrService if nothing matches
         return CustomerOrService();

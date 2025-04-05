@@ -2,8 +2,10 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:homecrew/auth/auth_service.dart';
 import 'package:homecrew/customer_or_service.dart';
+import 'package:homecrew/customerscreens/Notifications.dart';
 import 'package:homecrew/customerscreens/cart.dart';
 import 'package:homecrew/customerscreens/my_account.dart';
+import 'package:homecrew/customerscreens/searchResults.dart';
 import 'package:homecrew/customerscreens/service_pages/servicePage.dart';
 import 'package:homecrew/customerscreens/service_pages/hair_salon.dart';
 import 'package:homecrew/customerscreens/service_pages/manicure.dart';
@@ -25,6 +27,7 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
   late String uid;
   String name = "";
   //int mobile = 0;
+  TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
@@ -115,7 +118,7 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
       home: Scaffold(
         backgroundColor: Colors.grey[100],
         appBar: PreferredSize(
-          preferredSize: const Size.fromHeight(150), // Increased height
+          preferredSize: const Size.fromHeight(120), // Increased height
           child: AppBar(
               backgroundColor: const Color(0xFF006A4E), // Green color
               elevation: 0,
@@ -130,28 +133,9 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
                       'Hello, ' + name,
                       style: const TextStyle(
                         color: Colors.white,
-                        fontSize: 16,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold
                       ),
-                    ),
-                    const SizedBox(height: 5),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Text(
-                          'Mumbai, 400001',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        SizedBox(width: 5),
-                        Icon(
-                          Icons.location_on,
-                          color: Colors.white,
-                          size: 20,
-                        ),
-                      ],
                     ),
                     const SizedBox(height: 15),
                     // Search bar
@@ -161,14 +145,25 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      child: const TextField(
-                        decoration: InputDecoration(
+                      child: TextField(
+                        controller: _searchController,
+                        onSubmitted: (value) {
+                          if (value.trim().isNotEmpty) {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => SearchResultsPage(query: value),
+                              ),
+                            );
+                          }
+                        },
+                        decoration: const InputDecoration(
                           icon: Icon(Icons.search, color: Colors.grey),
                           hintText: 'What service are you looking for?',
                           border: InputBorder.none,
                         ),
                       ),
-                    ),
+                    )
                   ],
                 ),
               ),
@@ -178,10 +173,9 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
                     Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (context) => Cart(
-                            )));
+                        builder: (context) => NotificationsPage()));
                   },
-                  child: const Icon(Icons.shopping_cart, color: Colors.white),
+                  child: const Icon(Icons.notifications, color: Colors.white),
                 ),
               ]),
         ),
@@ -368,694 +362,886 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
   }
 
   Widget _buildCookDriverGuardcontent() {
-    return Padding(
+  return Column(
+    mainAxisSize: MainAxisSize.min, // Allows dynamic height
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
-        child: Column(
-          mainAxisSize: MainAxisSize.min, // Allows dynamic height
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Cook\'s Driver and Guard',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 20),
-            Wrap(
-              spacing: 10,
-              runSpacing: 10, // Adjust vertical spacing if needed
-              alignment: WrapAlignment.center,
-              children: [
-                _buildServiceCard('assets/images/Cook.png', "Cook", () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => ServicePage(
-                              category: "Cook, Driver & Guard",
-                              subcategory: "Cook",
-                              imageUrl: 'assets/images/CookImg.png',
-                            )));
-                }),
-                _buildServiceCard('assets/images/Driver.png', "Driver", () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => ServicePage(
-                              category: "Cook, Driver & Guard",
-                              subcategory: "Driver",
-                              imageUrl: 'assets/images/DriverImg.png',
-                            )));
-                }),
-                _buildServiceCard('assets/images/Guard.png', 'Guard', () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => ServicePage(
-                              category: "Cook, Driver & Guard",
-                              subcategory: "Guard",
-                              imageUrl: 'assets/images/Security.jpg',
-                            )));
-                }),
-              ],
-            ),
-            SizedBox(height: 20),
-          ],
-        ));
-  }
+        child: Text(
+          'Cook\'s Driver and Guard',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+      ),
+      SizedBox(height: 20),
+      Align(
+        alignment: Alignment.center,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 0.0),
+          child: Wrap(
+            spacing: 20, // Match spacing with appliances layout
+            runSpacing: 20,
+            alignment: WrapAlignment.start,
+            children: [
+              _buildServiceCard('assets/images/Cook.png', "Cook", () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ServicePage(
+                      category: "Cook, Driver & Guard",
+                      subcategory: "Cook",
+                      imageUrl: 'assets/images/CookImg.png',
+                    ),
+                  ),
+                );
+              }),
+              _buildServiceCard('assets/images/Driver.png', "Driver", () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ServicePage(
+                      category: "Cook, Driver & Guard",
+                      subcategory: "Driver",
+                      imageUrl: 'assets/images/DriverImg.png',
+                    ),
+                  ),
+                );
+              }),
+              _buildServiceCard('assets/images/Guard.png', 'Guard', () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ServicePage(
+                      category: "Cook, Driver & Guard",
+                      subcategory: "Guard",
+                      imageUrl: 'assets/images/Security.jpg',
+                    ),
+                  ),
+                );
+              }),
+            ],
+          ),
+        ),
+      ),
+      SizedBox(height: 20),
+    ],
+  );
+}
+
 
   Widget _buildPaintingContent() {
-    return Padding(
+  return Column(
+    mainAxisSize: MainAxisSize.min, // Allows dynamic height
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
-        child: Column(
-          mainAxisSize: MainAxisSize.min, // Allows dynamic height
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Walls & rooms Painting',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 20),
-            Wrap(
-              spacing: 10,
-              runSpacing: 10, // Adjust vertical spacing if needed
-              alignment: WrapAlignment.center,
-              children: [
-                _buildServiceCard(
-                    'assets/images/Bedroom.png', "Bedroom", () {
-                      Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => ServicePage(
-                              category: "Painting",
-                              subcategory: "Bedroom",
-                              imageUrl: 'assets/images/BedroomPainting.png',
-                            )));
-                    }),
-                _buildServiceCard(
-                    'assets/images/Hall.png', 'Living &\nDining room', () {
-                      Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => ServicePage(
-                              category: "Painting",
-                              subcategory: "Living & Dining room",
-                              imageUrl: 'assets/images/LivingRoomPainting.png',
-                            )));
-                    }),
-                _buildServiceCard(
-                    'assets/images/Full_home.png', 'Full\nHome', () {
-                      Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => ServicePage(
-                              category: "Painting",
-                              subcategory: "Full Home",
-                              imageUrl: 'assets/images/HomePainting.png',
-                            )));
-                    }),
-                _buildServiceCard('assets/images/Kitchen&Bathroom.png',
-                    'Kitchen\n& Bathroom', () {
-                      Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => ServicePage(
-                              category: "Painting",
-                              subcategory: "Kitchen & Bathroom",
-                              imageUrl: 'assets/images/KitchenPainting.png',
-                            )));
-                    }),
-                _buildServiceCard('assets/images/WaterProofing.png',
-                    'Water\nProofing', () {
-                      Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => ServicePage(
-                              category: "Painting",
-                              subcategory: "Water Proofing",
-                              imageUrl: 'assets/images/WaterProofingPainting.png',
-                            )));
-                    }),
-              ],
-            ),
-          ],
-        ));
-  }
+        child: Text(
+          'Walls & rooms Painting',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+      ),
+      SizedBox(height: 20),
+      Align(
+        alignment: Alignment.center,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 0.0),
+          child: Wrap(
+            spacing: 20,
+            runSpacing: 20,
+            alignment: WrapAlignment.start,
+            children: [
+              _buildServiceCard('assets/images/Bedroom.png', "Bedroom", () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ServicePage(
+                      category: "Painting",
+                      subcategory: "Bedroom",
+                      imageUrl: 'assets/images/BedroomPainting.png',
+                    ),
+                  ),
+                );
+              }),
+              _buildServiceCard(
+                  'assets/images/Hall.png', 'Living &\nDining room', () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ServicePage(
+                      category: "Painting",
+                      subcategory: "Living & Dining room",
+                      imageUrl: 'assets/images/LivingRoomPainting.png',
+                    ),
+                  ),
+                );
+              }),
+              _buildServiceCard('assets/images/Full_home.png', 'Full\nHome',
+                  () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ServicePage(
+                      category: "Painting",
+                      subcategory: "Full Home",
+                      imageUrl: 'assets/images/HomePainting.png',
+                    ),
+                  ),
+                );
+              }),
+              _buildServiceCard(
+                  'assets/images/Kitchen&Bathroom.png', 'Kitchen\n& Bathroom',
+                  () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ServicePage(
+                      category: "Painting",
+                      subcategory: "Kitchen & Bathroom",
+                      imageUrl: 'assets/images/KitchenPainting.png',
+                    ),
+                  ),
+                );
+              }),
+              _buildServiceCard('assets/images/WaterProofing.png',
+                  'Water\nProofing', () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ServicePage(
+                      category: "Painting",
+                      subcategory: "Water Proofing",
+                      imageUrl: 'assets/images/WaterProofingPainting.png',
+                    ),
+                  ),
+                );
+              }),
+            ],
+          ),
+        ),
+      ),
+      SizedBox(height: 20),
+    ],
+  );
+}
+
 
   Widget _buildCleaningContent() {
-    return Padding(
+  return Column(
+    mainAxisSize: MainAxisSize.min, // Allows dynamic height
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
-        child: Column(
-          mainAxisSize: MainAxisSize.min, // Allows dynamic height
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Cleaning & Pest Control',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 20),
-            Wrap(
-              spacing: 10,
-              runSpacing: 10, // Adjust vertical spacing if needed
-              alignment: WrapAlignment.center,
-              children: [
-                _buildServiceCard(
-                    'assets/images/Bathroom.png', "Bathroom\nCleaning", () {
-                      Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => ServicePage(
-                              category: "Cleaning",
-                              subcategory: "Bathroom Cleaning",
-                              imageUrl: 'assets/images/BathroomCleaning.png',
-                            )));
-                    }),
-                _buildServiceCard(
-                    'assets/images/Kitchen.png', "Kitchen\nCleaning", () {
-                      Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => ServicePage(
-                              category: "Cleaning",
-                              subcategory: "Kitchen Cleaning",
-                              imageUrl: 'assets/images/KitchenCleaning.png',
-                            )));
-                    }),
-                _buildServiceCard(
-                    'assets/images/FullHome.png', 'Full\nHome Cleaning', () {
-                      Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => ServicePage(
-                              category: "Cleaning",
-                              subcategory: "Full Home Cleaning",
-                              imageUrl: 'assets/images/HomeCleaning.png',
-                            )));
-                    }),
-                _buildServiceCard('assets/images/Sofa&Carpet.png',
-                    'Sofa &\nCarpet Cleaning', () {
-                      Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => ServicePage(
-                              category: "Cleaning",
-                              subcategory: "Sofa & Carpet Cleaning",
-                              imageUrl: 'assets/images/CarpetCleaning.png',
-                            )));
-                    }),
-                _buildServiceCard(
-                    'assets/images/PestControl.png', 'Pest\nControl', () {
-                      Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => ServicePage(
-                              category: "Cleaning",
-                              subcategory: "Pest Control",
-                              imageUrl: 'assets/images/PestControlImg.png',
-                            )));
-                    }),
-              ],
-            ),
-          ],
-        ));
-  }
+        child: Text(
+          'Cleaning & Pest Control',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+      ),
+      SizedBox(height: 20),
+      Align(
+        alignment: Alignment.center,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 0.0),
+          child: Wrap(
+            spacing: 20,
+            runSpacing: 20,
+            alignment: WrapAlignment.start,
+            children: [
+              _buildServiceCard(
+                  'assets/images/Bathroom.png', "Bathroom\nCleaning", () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ServicePage(
+                      category: "Cleaning",
+                      subcategory: "Bathroom Cleaning",
+                      imageUrl: 'assets/images/BathroomCleaning.png',
+                    ),
+                  ),
+                );
+              }),
+              _buildServiceCard(
+                  'assets/images/Kitchen.png', "Kitchen\nCleaning", () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ServicePage(
+                      category: "Cleaning",
+                      subcategory: "Kitchen Cleaning",
+                      imageUrl: 'assets/images/KitchenCleaning.png',
+                    ),
+                  ),
+                );
+              }),
+              _buildServiceCard(
+                  'assets/images/FullHome.png', 'Full\nHome Cleaning', () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ServicePage(
+                      category: "Cleaning",
+                      subcategory: "Full Home Cleaning",
+                      imageUrl: 'assets/images/HomeCleaning.png',
+                    ),
+                  ),
+                );
+              }),
+              _buildServiceCard(
+                  'assets/images/Sofa&Carpet.png', 'Sofa &\nCarpet Cleaning',
+                  () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ServicePage(
+                      category: "Cleaning",
+                      subcategory: "Sofa & Carpet Cleaning",
+                      imageUrl: 'assets/images/CarpetCleaning.png',
+                    ),
+                  ),
+                );
+              }),
+              _buildServiceCard(
+                  'assets/images/PestControl.png', 'Pest\nControl', () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ServicePage(
+                      category: "Cleaning",
+                      subcategory: "Pest Control",
+                      imageUrl: 'assets/images/PestControlImg.png',
+                    ),
+                  ),
+                );
+              }),
+            ],
+          ),
+        ),
+      ),
+      SizedBox(height: 20),
+    ],
+  );
+}
+
 
   Widget _buildPlumbingContent() {
-    return Padding(
+  return Column(
+    mainAxisSize: MainAxisSize.min,
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
-        child: Column(
-          mainAxisSize: MainAxisSize.min, // Allows dynamic height
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Plumbing Works',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 20),
-            Wrap(
-              spacing: 10,
-              runSpacing: 10, // Adjust vertical spacing if needed
-              alignment: WrapAlignment.center,
-              children: [
-                _buildServiceCard('assets/images/Leakage.png', "Blocks &\nLeakages", () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => ServicePage(
-                              category: "Plumbing",
-                              subcategory: "Blocks & Leakages",
-                              imageUrl: 'assets/images/blocks&leakages.png',
-                            )));
-                }),
-                _buildServiceCard('assets/images/BathFitting.png', "Bath\nFitting", () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => ServicePage(
-                              category: "Plumbing",
-                              subcategory: "Bath Fitting",
-                              imageUrl: 'assets/images/BathFittingRepair.png',
-                            )));
-                }),
-                _buildServiceCard('assets/images/Tap&Mixer.png', 'Tap &\nMixer', () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => ServicePage(
-                              category: "Plumbing",
-                              subcategory: "Tap & Mixer",
-                              imageUrl: 'assets/images/TapRepair.png',
-                            )));
-                }),
-                _buildServiceCard('assets/images/BasinSink.png', "Basin &\nSink", () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => ServicePage(
-                              category: "Plumbing",
-                              subcategory: "Basin & Sink",
-                              imageUrl: 'assets/images/BasinSinkRepair.png',
-                            )));
-                }),
-              ],
-            ),
-            SizedBox(height: 20),
-          ],
-        ));
-  }
+        child: Text(
+          'Plumbing Works',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+      ),
+      SizedBox(height: 20),
+      Align(
+        alignment: Alignment.center,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 0.0),
+          child: Wrap(
+            spacing: 20,
+            runSpacing: 20,
+            alignment: WrapAlignment.start,
+            children: [
+              _buildServiceCard(
+                  'assets/images/Leakage.png', "Blocks &\nLeakages", () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ServicePage(
+                      category: "Plumbing",
+                      subcategory: "Blocks & Leakages",
+                      imageUrl: 'assets/images/blocks&leakages.png',
+                    ),
+                  ),
+                );
+              }),
+              _buildServiceCard(
+                  'assets/images/BathFitting.png', "Bath\nFitting", () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ServicePage(
+                      category: "Plumbing",
+                      subcategory: "Bath Fitting",
+                      imageUrl: 'assets/images/BathFittingRepair.png',
+                    ),
+                  ),
+                );
+              }),
+              _buildServiceCard(
+                  'assets/images/Tap&Mixer.png', 'Tap &\nMixer', () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ServicePage(
+                      category: "Plumbing",
+                      subcategory: "Tap & Mixer",
+                      imageUrl: 'assets/images/TapRepair.png',
+                    ),
+                  ),
+                );
+              }),
+              _buildServiceCard(
+                  'assets/images/BasinSink.png', "Basin &\nSink", () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ServicePage(
+                      category: "Plumbing",
+                      subcategory: "Basin & Sink",
+                      imageUrl: 'assets/images/BasinSinkRepair.png',
+                    ),
+                  ),
+                );
+              }),
+            ],
+          ),
+        ),
+      ),
+      SizedBox(height: 20),
+    ],
+  );
+}
+
 
 
   Widget _buildElectricalContent() {
-    return Padding(
+  return Column(
+    mainAxisSize: MainAxisSize.min,
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
-        child: Column(
-          mainAxisSize: MainAxisSize.min, // Allows dynamic height
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Electrical Works',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 20),
-            Wrap(
-              spacing: 10,
-              runSpacing: 10, // Adjust vertical spacing if needed
-              alignment: WrapAlignment.center,
-              children: [
-                _buildServiceCard('assets/images/Switch.png',
-                    "Switch\nRepair & Services", () {
-                      Navigator.push(
+        child: Text(
+          'Electrical Works',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+      ),
+      SizedBox(height: 20),
+      Align(
+        alignment: Alignment.center,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 0.0),
+          child: Wrap(
+            spacing: 20,
+            runSpacing: 20,
+            alignment: WrapAlignment.start,
+            children: [
+              _buildServiceCard(
+                'assets/images/Switch.png',
+                "Switch\nRepair & Services",
+                () {
+                  Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (context) => ServicePage(
-                              category: "Electrical",
-                              subcategory: "Switch Repair & Services",
-                              imageUrl: 'assets/images/SwitchRepair.png',
-                            )));
-                    }),
-                _buildServiceCard('assets/images/Light.png',
-                    "Lights\nRepair & Services", () {
-                      Navigator.push(
+                      builder: (context) => ServicePage(
+                        category: "Electrical",
+                        subcategory: "Switch Repair & Services",
+                        imageUrl: 'assets/images/SwitchRepair.png',
+                      ),
+                    ),
+                  );
+                },
+              ),
+              _buildServiceCard(
+                'assets/images/Light.png',
+                "Lights\nRepair & Services",
+                () {
+                  Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (context) => ServicePage(
-                              category: "Electrical",
-                              subcategory: "Lights Repair & Services",
-                              imageUrl: 'assets/images/LightsRepair.png',
-                            )));
-                    }),
-                _buildServiceCard(
-                    'assets/images/Fan.png', 'Fan\nRepair & Services', () {
-                      Navigator.push(
+                      builder: (context) => ServicePage(
+                        category: "Electrical",
+                        subcategory: "Lights Repair & Services",
+                        imageUrl: 'assets/images/LightsRepair.png',
+                      ),
+                    ),
+                  );
+                },
+              ),
+              _buildServiceCard(
+                'assets/images/Fan.png',
+                'Fan\nRepair & Services',
+                () {
+                  Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (context) => ServicePage(
-                              category: "Electrical",
-                              subcategory: "Fan Repair & Services",
-                              imageUrl: 'assets/images/FanRepair.png',
-                            )));
-                    }),
-                _buildServiceCard('assets/images/HomeDecoration.png',
-                    'Festive\nLights\nDecoration', () {
-                      Navigator.push(
+                      builder: (context) => ServicePage(
+                        category: "Electrical",
+                        subcategory: "Fan Repair & Services",
+                        imageUrl: 'assets/images/FanRepair.png',
+                      ),
+                    ),
+                  );
+                },
+              ),
+              _buildServiceCard(
+                'assets/images/HomeDecoration.png',
+                'Festive\nLights\nDecoration',
+                () {
+                  Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (context) => ServicePage(
-                              category: "Electrical",
-                              subcategory: "Festive Lights Decoration",
-                              imageUrl: 'assets/images/Decoration.png',
-                            )));
-                    }),
-              ],
-            ),
-          ],
-        ));
-  }
+                      builder: (context) => ServicePage(
+                        category: "Electrical",
+                        subcategory: "Festive Lights Decoration",
+                        imageUrl: 'assets/images/Decoration.png',
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+      SizedBox(height: 20),
+    ],
+  );
+}
+
 
   Widget _buildWomenSalonContent() {
-    return Padding(
+  return Column(
+    mainAxisSize: MainAxisSize.min,
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
-        child: Column(
-          mainAxisSize: MainAxisSize.min, // Allows dynamic height
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Women\'s Salon and Spa',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 20),
-            Wrap(
-              spacing: 10,
-              runSpacing: 10, // Adjust vertical spacing if needed
-              alignment: WrapAlignment.center,
-              children: [
-                _buildServiceCard('assets/images/Salon.png', "Hair\nSalon", () {
+        child: Text(
+          'Women\'s Salon and Spa',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+      ),
+      SizedBox(height: 20),
+      Align(
+        alignment: Alignment.center,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 0.0),
+          child: Wrap(
+            spacing: 20,
+            runSpacing: 20,
+            alignment: WrapAlignment.start,
+            children: [
+              _buildServiceCard(
+                'assets/images/Salon.png',
+                "Hair\nSalon",
+                () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (context) => ServicePage(
-                              category: "Women's Salon & Spa",
-                              subcategory: "Hair Salon",
-                              imageUrl: 'assets/images/HairSalon.png',
-                            )));
-                }),
-                _buildServiceCard('assets/images/ManicurePedicure.png',
-                    "Manicure &\nPedicure", () {
+                      builder: (context) => ServicePage(
+                        category: "Women's Salon & Spa",
+                        subcategory: "Hair Salon",
+                        imageUrl: 'assets/images/HairSalon.png',
+                      ),
+                    ),
+                  );
+                },
+              ),
+              _buildServiceCard(
+                'assets/images/ManicurePedicure.png',
+                "Manicure &\nPedicure",
+                () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (context) => ServicePage(
-                              category: "Women's Salon & Spa",
-                              subcategory: "Manicure & Pedicure",
-                              imageUrl: 'assets/images/manicure&pedicure.png',
-                            )));
-                }),
-                _buildServiceCard(
-                    'assets/images/Spa.png', 'Spa &\nMassage', () {
-                      Navigator.push(
+                      builder: (context) => ServicePage(
+                        category: "Women's Salon & Spa",
+                        subcategory: "Manicure & Pedicure",
+                        imageUrl: 'assets/images/manicure&pedicure.png',
+                      ),
+                    ),
+                  );
+                },
+              ),
+              _buildServiceCard(
+                'assets/images/Spa.png',
+                'Spa &\nMassage',
+                () {
+                  Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (context) => ServicePage(
-                              category: "Women's Salon & Spa",
-                              subcategory: "Spa & Massage",
-                              imageUrl: 'assets/images/Spa&Massage.png',
-                            )));
-                    }),
-                _buildServiceCard(
-                    'assets/images/Makeup.png', 'Makeup &\nStyling', () {
-                      Navigator.push(
+                      builder: (context) => ServicePage(
+                        category: "Women's Salon & Spa",
+                        subcategory: "Spa & Massage",
+                        imageUrl: 'assets/images/Spa&Massage.png',
+                      ),
+                    ),
+                  );
+                },
+              ),
+              _buildServiceCard(
+                'assets/images/Makeup.png',
+                'Makeup &\nStyling',
+                () {
+                  Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (context) => ServicePage(
-                              category: "Women's Salon & Spa",
-                              subcategory: "Makeup & Styling",
-                              imageUrl: 'assets/images/Makeup&Styling.png',
-                            )));
-                    }),
-              ],
-            ),
-          ],
-        ));
-  }
+                      builder: (context) => ServicePage(
+                        category: "Women's Salon & Spa",
+                        subcategory: "Makeup & Styling",
+                        imageUrl: 'assets/images/Makeup&Styling.png',
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+      SizedBox(height: 20),
+    ],
+  );
+}
+
 
   Widget _buildMenSalonContent() {
-    return Padding(
+  return Column(
+    mainAxisSize: MainAxisSize.min,
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
-        child: Column(
-          mainAxisSize: MainAxisSize.min, // Allows dynamic height
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Men\'s Salon and Spa',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 20),
-            Wrap(
-              spacing: 10,
-              runSpacing: 10, // Adjust vertical spacing if needed
-              alignment: WrapAlignment.center,
-              children: [
-                _buildServiceCard(
-                    'assets/images/MenSalon.png', "Hair\nSalon", () {
-                      Navigator.push(
+        child: Text(
+          'Men\'s Salon and Spa',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+      ),
+      SizedBox(height: 20),
+      Align(
+        alignment: Alignment.center,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 0.0),
+          child: Wrap(
+            spacing: 20,
+            runSpacing: 20,
+            alignment: WrapAlignment.start,
+            children: [
+              _buildServiceCard(
+                'assets/images/MenSalon.png',
+                "Hair\nSalon",
+                () {
+                  Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (context) => ServicePage(
-                              category: "Men's Salon & Spa",
-                              subcategory: "Hair Salon",
-                              imageUrl: 'assets/images/HairTrim.png',
-                            )));
-                    }),
-                _buildServiceCard(
-                    'assets/images/MenSpa.png', "Spa &\nMassage", () {
-                      Navigator.push(
+                      builder: (context) => ServicePage(
+                        category: "Men's Salon & Spa",
+                        subcategory: "Hair Salon",
+                        imageUrl: 'assets/images/HairTrim.png',
+                      ),
+                    ),
+                  );
+                },
+              ),
+              _buildServiceCard(
+                'assets/images/MenSpa.png',
+                "Spa &\nMassage",
+                () {
+                  Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (context) => ServicePage(
-                              category: "Men's Salon & Spa",
-                              subcategory: "Spa & Massage",
-                              imageUrl: 'assets/images/MenMassage.png',
-                            )));
-                    }),
-                _buildServiceCard('assets/images/MenShaving.png',
-                    'Beard Shave & \nTrim', () {
-                      Navigator.push(
+                      builder: (context) => ServicePage(
+                        category: "Men's Salon & Spa",
+                        subcategory: "Spa & Massage",
+                        imageUrl: 'assets/images/MenMassage.png',
+                      ),
+                    ),
+                  );
+                },
+              ),
+              _buildServiceCard(
+                'assets/images/MenShaving.png',
+                'Beard Shave & \nTrim',
+                () {
+                  Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (context) => ServicePage(
-                              category: "Men's Salon & Spa",
-                              subcategory: "Beard Shave & Trim",
-                              imageUrl: 'assets/images/BeardTrim.png',
-                            )));
-                    }),
-                _buildServiceCard(
-                    'assets/images/MenFacial.jpg', 'Facial', () {
-                      Navigator.push(
+                      builder: (context) => ServicePage(
+                        category: "Men's Salon & Spa",
+                        subcategory: "Beard Shave & Trim",
+                        imageUrl: 'assets/images/BeardTrim.png',
+                      ),
+                    ),
+                  );
+                },
+              ),
+              _buildServiceCard(
+                'assets/images/MenFacial.jpg',
+                'Facial',
+                () {
+                  Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (context) => ServicePage(
-                              category: "Men's Salon & Spa",
-                              subcategory: "Facial",
-                              imageUrl: 'assets/images/MenFacial.png',
-                            )));
-                    }),
-              ],
-            ),
-          ],
-        ));
-  }
+                      builder: (context) => ServicePage(
+                        category: "Men's Salon & Spa",
+                        subcategory: "Facial",
+                        imageUrl: 'assets/images/MenFacial.png',
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+      SizedBox(height: 20),
+    ],
+  );
+}
+
 
   Widget _buildCarpentaryWorksContent() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
-      child: Column(
-        mainAxisSize: MainAxisSize.min, // Allows dynamic height
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Carpentry',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-          SizedBox(height: 20),
-          Wrap(
-            spacing: 10, // Adjust spacing as needed
-            runSpacing: 10,
-            alignment: WrapAlignment.center,
+  return Column(
+    mainAxisSize: MainAxisSize.min,
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
+        child: Text(
+          'Carpentry',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+      ),
+      SizedBox(height: 20),
+      Align(
+        alignment: Alignment.center,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 0.0),
+          child: Wrap(
+            spacing: 20,
+            runSpacing: 20,
+            alignment: WrapAlignment.start,
             children: [
-              _buildServiceCard('assets/images/Carpentary_repair.png',
-                  "Door", () {
-                    Navigator.push(
+              _buildServiceCard(
+                'assets/images/Carpentary_repair.png',
+                "Door",
+                () {
+                  Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (context) => ServicePage(
-                              category: "Carpentary",
-                              subcategory: "Door",
-                              imageUrl: 'assets/images/DoorRepair.png',
-                            )));
-                  }),
-              _buildServiceCard('assets/images/FurnitureAssembly.png',
-                  "Furniture\nRepair", () {
-                    Navigator.push(
+                      builder: (context) => ServicePage(
+                        category: "Carpentry",
+                        subcategory: "Door",
+                        imageUrl: 'assets/images/DoorRepair.png',
+                      ),
+                    ),
+                  );
+                },
+              ),
+              _buildServiceCard(
+                'assets/images/FurnitureAssembly.png',
+                "Furniture\nRepair",
+                () {
+                  Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (context) => ServicePage(
-                              category: "Carpentry",
-                              subcategory: "Furniture Repair",
-                              imageUrl: 'assets/images/Carpentary.png',
-                            )));
-                  }),
+                      builder: (context) => ServicePage(
+                        category: "Carpentry",
+                        subcategory: "Furniture Repair",
+                        imageUrl: 'assets/images/Carpentary.png',
+                      ),
+                    ),
+                  );
+                },
+              ),
             ],
           ),
-          SizedBox(height: 20),
-        ],
+        ),
       ),
-    );
-  }
+      SizedBox(height: 20),
+    ],
+  );
+}
+
 
   Widget _buildAppliancesRepairContent() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
-      child: Column(
+    return Column(
         mainAxisSize: MainAxisSize.min, // Allows dynamic height
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Appliances',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
+            child: Text(
+              'Appliances',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
           ),
           SizedBox(height: 20),
-          Wrap(
-            spacing: 10, // Adjust spacing as needed
-            runSpacing: 10,
-            alignment: WrapAlignment.center,
-            children: [
-              _buildServiceCard('assets/images/AC.png', "Air\nConditioner", () {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => ServicePage(
-                              category: "Appliances",
-                              subcategory: "Air Conditioner",
-                              imageUrl: 'assets/images/AC_repair.png',
-                            )));
-              }),
-              _buildServiceCard('assets/images/Chimney.png', "Chimney", () {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => ServicePage(
-                              category: "Appliances",
-                              subcategory: "Chimney",
-                              imageUrl: 'assets/images/ChimneyRepair.png',
-                            )));
-              }),
-              _buildServiceCard(
-                  'assets/images/GasStove.png', 'Gas\nStove', () {
+          Align(
+            alignment: Alignment.center,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 0.0),
+              child: Wrap(
+                spacing: 20, // Adjust spacing as needed
+                runSpacing: 20,
+                alignment: WrapAlignment.start,
+                children: [
+                  _buildServiceCard('assets/images/AC.png', "Air\nConditioner", () {
                     Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => ServicePage(
-                              category: "Appliances",
-                              subcategory: "Gas Stove",
-                              imageUrl: 'assets/images/StoveRepair.png',
-                            )));
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => ServicePage(
+                                  category: "Appliances",
+                                  subcategory: "Air Conditioner",
+                                  imageUrl: 'assets/images/AC_repair.png',
+                                )));
                   }),
-              _buildServiceCard('assets/images/Geyser.png', 'Geyser', () {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => ServicePage(
-                              category: "Appliances",
-                              subcategory: "Geyser",
-                              imageUrl: 'assets/images/GeyserRepair.png',
-                            )));
-              }),
-              _buildServiceCard(
-                  'assets/images/Invertor.png', 'Inverter', () {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => ServicePage(
-                              category: "Appliances",
-                              subcategory: "Inverter",
-                              imageUrl: 'assets/images/InvertorRepair.png',
-                            )));    
-                  }),
-              _buildServiceCard('assets/images/Laptop.png', 'Laptop', () {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => ServicePage(
-                              category: "Appliances",
-                              subcategory: "Laptop",
-                              imageUrl: 'assets/images/LaptopRepair.png',
-                            )));
-              }),
-              _buildServiceCard(
-                  'assets/images/WaterPurifier.png', 'Water\nPurifier', () {
+                  _buildServiceCard('assets/images/Chimney.png', "Chimney", () {
                     Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => ServicePage(
-                              category: "Appliances",
-                              subcategory: "Water Purifier",
-                              imageUrl: 'assets/images/WaterPurifierRepair.png',
-                            )));
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => ServicePage(
+                                  category: "Appliances",
+                                  subcategory: "Chimney",
+                                  imageUrl: 'assets/images/ChimneyRepair.png',
+                                )));
                   }),
-              _buildServiceCard('assets/images/WashingMachine.png',
-                  'Washing\nMachine', () {
+                  _buildServiceCard(
+                      'assets/images/GasStove.png', 'Gas\nStove', () {
+                        Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => ServicePage(
+                                  category: "Appliances",
+                                  subcategory: "Gas Stove",
+                                  imageUrl: 'assets/images/StoveRepair.png',
+                                )));
+                      }),
+                  _buildServiceCard('assets/images/Geyser.png', 'Geyser', () {
                     Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => ServicePage(
-                              category: "Appliances",
-                              subcategory: "Washing Machine",
-                              imageUrl: 'assets/images/WashingMachineRepair.png',
-                            )));
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => ServicePage(
+                                  category: "Appliances",
+                                  subcategory: "Geyser",
+                                  imageUrl: 'assets/images/GeyserRepair.png',
+                                )));
                   }),
-              _buildServiceCard(
-                  'assets/images/Microwave.png', 'Microwave', () {
+                  _buildServiceCard(
+                      'assets/images/Invertor.png', 'Inverter', () {
                     Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => ServicePage(
-                              category: "Appliances",
-                              subcategory: "Microwave",
-                              imageUrl: 'assets/images/MicrowaveRepair.png',
-                            )));
-                  }),
-              _buildServiceCard(
-                  'assets/images/Refridgerator.png', 'Refridgerator', () {
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => ServicePage(
+                                  category: "Appliances",
+                                  subcategory: "Inverter",
+                                  imageUrl: 'assets/images/InvertorRepair.png',
+                                )));    
+                      }),
+                  _buildServiceCard('assets/images/Laptop.png', 'Laptop', () {
                     Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => ServicePage(
-                              category: "Appliances",
-                              subcategory: "Refridgerator",
-                              imageUrl: 'assets/images/FridgeRepair.png',
-                            )));
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => ServicePage(
+                                  category: "Appliances",
+                                  subcategory: "Laptop",
+                                  imageUrl: 'assets/images/LaptopRepair.png',
+                                )));
                   }),
-              _buildServiceCard('assets/images/TV.png', 'Television', () {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => ServicePage(
-                              category: "Appliances",
-                              subcategory: "Television",
-                              imageUrl: 'assets/images/TVRepair.png',
-                            )));
-              }),
-            ],
+                  _buildServiceCard(
+                      'assets/images/WaterPurifier.png', 'Water\nPurifier', () {
+                        Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => ServicePage(
+                                  category: "Appliances",
+                                  subcategory: "Water Purifier",
+                                  imageUrl: 'assets/images/WaterPurifierRepair.png',
+                                )));
+                      }),
+                  _buildServiceCard('assets/images/WashingMachine.png',
+                      'Washing\nMachine', () {
+                        Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => ServicePage(
+                                  category: "Appliances",
+                                  subcategory: "Washing Machine",
+                                  imageUrl: 'assets/images/WashingMachineRepair.png',
+                                )));
+                      }),
+                  _buildServiceCard(
+                      'assets/images/Microwave.png', 'Microwave', () {
+                        Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => ServicePage(
+                                  category: "Appliances",
+                                  subcategory: "Microwave",
+                                  imageUrl: 'assets/images/MicrowaveRepair.png',
+                                )));
+                      }),
+                  _buildServiceCard(
+                      'assets/images/Refridgerator.png', 'Refridgerator', () {
+                        Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => ServicePage(
+                                  category: "Appliances",
+                                  subcategory: "Refridgerator",
+                                  imageUrl: 'assets/images/FridgeRepair.png',
+                                )));
+                      }),
+                  _buildServiceCard('assets/images/TV.png', 'Television', () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => ServicePage(
+                                  category: "Appliances",
+                                  subcategory: "Television",
+                                  imageUrl: 'assets/images/TVRepair.png',
+                                )));
+                  }),
+                ],
+              ),
+            ),
           ),
           SizedBox(height: 20),
         ],
-      ),
     );
   }
 
   Widget _buildServiceCard(
-      String imagePath, String text, void Function() Navigate) {
-    return GestureDetector(
-      onTap: Navigate,
-      child: Column(
-        children: [
-          Card(
-            shape: RoundedRectangleBorder(
-              borderRadius:
-                  BorderRadius.circular(8), // Slightly rounded corners
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(
-                  8), // Ensure the image follows the card's shape
-              child: Image.asset(
-                imagePath,
-                width: 50, // Adjust width based on your design
-                height: 50, // Keep it square
-                fit: BoxFit.cover, // Ensures the image scales properly
+    String imagePath, String text, void Function() Navigate) {
+      return GestureDetector(
+        onTap: Navigate,
+        child: SizedBox(
+          width: 90, // Fixed width for uniform layout
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Card(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Image.asset(
+                    imagePath,
+                    width: 60,
+                    height: 60,
+                    fit: BoxFit.cover,
+                  ),
+                ),
               ),
-            ),
+              SizedBox(height: 4),
+              Text(
+                text,
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 12),
+                maxLines: 2,             // limits to 2 lines
+                overflow: TextOverflow.ellipsis, // if overflow, show '...'
+              ),
+            ],
           ),
-          SizedBox(height: 4), // Spacing between card and text
-          Text(text, textAlign: TextAlign.center),
-        ],
-      ),
-    );
-  }
+        ),
+      );
+    }
 }

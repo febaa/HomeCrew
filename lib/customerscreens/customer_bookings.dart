@@ -16,6 +16,7 @@ class _BookingsState extends State<Bookings> {
   final TextEditingController _negotiateController = TextEditingController();
   late String uid;
   final authService = AuthService();
+  bool isLoading = false;
 
   @override
   void initState() {
@@ -59,12 +60,10 @@ class _BookingsState extends State<Bookings> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text("My Bookings"),
-        backgroundColor: Colors.white,
-        elevation: 0,
-      ),
-      body: bookings.isEmpty
+      body: isLoading ? Center(child: CircularProgressIndicator()) 
+      : RefreshIndicator(
+        onRefresh: fetchBookings,
+        child: bookings.isEmpty
           ? Center(
               child: Text("No bookings found",
                   style: TextStyle(fontSize: 18, color: Colors.grey)))
@@ -558,6 +557,7 @@ class _BookingsState extends State<Bookings> {
                 );
               },
             ),
+      )
     );
   }
 }

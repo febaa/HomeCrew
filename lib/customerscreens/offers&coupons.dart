@@ -1,103 +1,197 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:homecrew/auth/auth_service.dart';
+import 'package:intl/intl.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
-void main() {
-  runApp(OffersCouponsApp());
-}
-
-class OffersCouponsApp extends StatelessWidget {
+class OffersCouponsPage extends StatefulWidget {
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(primarySwatch: Colors.green),
-      home: OffersCouponsPage(),
-    );
-  }
+  State<OffersCouponsPage> createState() => _OffersCouponsPageState();
 }
 
-class OffersCouponsPage extends StatelessWidget {
+class _OffersCouponsPageState extends State<OffersCouponsPage> {
+  List<Map<String, dynamic>> _coupons = [];
+  bool isLoading = true;
+  final supabase = Supabase.instance.client;
+  late String uid;
+  final authService = AuthService();
+
+  @override
+  void initState() {
+    super.initState();
+    uid = authService.getCurrentUserId()!;
+    fetchCoupons();
+  }
+
+  Future<void> fetchCoupons() async {
+    setState(() => isLoading = true);
+
+    try {
+      final response = await supabase
+          .from('coupons')
+          .select()
+          .eq('user_id', uid)
+          .order('validity', ascending: true);
+
+      setState(() {
+        _coupons = List<Map<String, dynamic>>.from(response);
+      });
+    } catch (e) {
+      print("Error fetching coupons: $e");
+    } finally {
+      setState(() => isLoading = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor:const Color(0xFF006A4E),
+        backgroundColor: const Color(0xFF006A4E),
         title: Text(
           'Offers & Coupons',
-          style: GoogleFonts.poppins(fontSize: 20, fontWeight: FontWeight.w600, color: Colors.white),
+          style: GoogleFonts.poppins(
+            fontSize: 20,
+            fontWeight: FontWeight.w600,
+            color: Colors.white,
+          ),
         ),
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Card(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-          elevation: 3,
-          child: Padding(
-            padding: const EdgeInsets.all(10.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'First Order',
-                            style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w600),
+      body: isLoading
+          ? Center(child: CircularProgressIndicator(color: Colors.green))
+          : _coupons.isEmpty
+              ? Center(
+                  child: Text(
+                    "No coupons found",
+                    style: GoogleFonts.poppins(fontSize: 16),
+                  ),
+                )
+              : RefreshIndicator(
+                  onRefresh: fetchCoupons,
+                  color: Colors.green,
+                  child: ListView.builder(
+                    padding: const EdgeInsets.all(16.0),
+                    itemCount: _coupons.length,
+                    itemBuilder: (context, index) {
+                      final coupon = _coupons[index];
+                      final formattedDate = DateFormat('dd-MM-yyyy').format(
+                        DateTime.parse(coupon['validity']),
+                      );
+
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 16.0),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(15),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              border: Border.all(color: Colors.green.shade700, width: 2),
+                              borderRadius: BorderRadius.circular(15),
+                              color: Colors.white,
+                            ),
+                            child: Column(
+                              children: [
+                                Container(
+                                  color: Colors.green.shade50,
+                                  padding: EdgeInsets.all(12),
+                                  width: double.infinity,
+                                  child: Text(
+                                    coupon['name'],
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                                Container(
+                                  height: 1,
+                                  color: Colors.grey.shade400,
+                                  margin: EdgeInsets.symmetric(horizontal: 20),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.all(14.0),
+                                  child: Row(
+                                    children: [
+                                      Expanded(
+                                        flex: 3,
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              coupon['detail'],
+                                              style: GoogleFonts.poppins(fontSize: 14),
+                                            ),
+                                            SizedBox(height: 10),
+                                            Text(
+                                              "Valid till: $formattedDate",
+                                              style: GoogleFonts.poppins(
+                                                  fontSize: 12, color: Colors.grey[600]),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      Expanded(
+                                        flex: 2,
+                                        child: Column(
+                                          children: [
+                                            Text(
+                                              "Promo Code",
+                                              style: GoogleFonts.poppins(
+                                                  fontSize: 12,
+                                                  fontWeight: FontWeight.w500),
+                                            ),
+                                            SizedBox(height: 5),
+                                            Container(
+                                              padding: EdgeInsets.symmetric(
+                                                  vertical: 6, horizontal: 12),
+                                              decoration: BoxDecoration(
+                                                borderRadius: BorderRadius.circular(6),
+                                                color: Colors.green.shade100,
+                                                border: Border.all(color: Colors.green),
+                                              ),
+                                              child: Text(
+                                                coupon['promocode'],
+                                                style: GoogleFonts.poppins(
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.green.shade800,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Container(
+                                  margin: EdgeInsets.symmetric(horizontal: 20),
+                                  child: Row(
+                                    children: List.generate(
+                                      60,
+                                      (index) => Expanded(
+                                        child: Container(
+                                          height: 1,
+                                          color: index % 2 == 0
+                                              ? Colors.transparent
+                                              : Colors.grey.shade400,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(height: 10),
+                              ],
+                            ),
                           ),
-                          SizedBox(height: 5),
-                          Text(
-                            'GET ₹21 off',
-                            style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.green),
-                          ),
-                          SizedBox(height: 5),
-                          Text(
-                            'Get ₹21 Off on your First Order',
-                            style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey[600]),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Container(
-                      width: 1,
-                      height: 80,
-                      color: Colors.grey[400],
-                    ),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Text(
-                            'Your Promo Code',
-                            style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w500),
-                          ),
-                          SizedBox(height: 5),
-                          Text(
-                            'GET21',
-                            style: GoogleFonts.poppins(fontSize: 20, fontWeight: FontWeight.w700, color: Colors.green),
-                          ),
-                          SizedBox(height: 5),
-                          Text(
-                            'Validity: 30-06-2025 11:59 pm',
-                            style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey[600]),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+                        ),
+                      );
+                    },
+                  ),
                 ),
-              ],
-            ),
-          ),
-        ),
-      ),
     );
   }
 }
