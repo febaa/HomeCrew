@@ -20,8 +20,11 @@ class _ServCreateAccountState extends State<ServCreateAccount> {
   var nameController = TextEditingController();
   var mobController = TextEditingController();
   var emailController = TextEditingController();
+  var ageController = TextEditingController();
+  var genderController = TextEditingController();
   var passwordController = TextEditingController();
   var passwordRetypeController = TextEditingController();
+  String? selectedGender;
   bool _isLoading = false;
 
   // List of service categories
@@ -42,6 +45,8 @@ class _ServCreateAccountState extends State<ServCreateAccount> {
     final name = nameController.text;
     final mobileNo = mobController.text;
     final email = emailController.text;
+    final age = ageController.text;
+    final gender = selectedGender;
     final password = passwordController.text;
     final confirmPassword = passwordRetypeController.text;
 
@@ -71,7 +76,9 @@ class _ServCreateAccountState extends State<ServCreateAccount> {
         'password': password,
         'email': email,
         'mobile': mobileNo,
-        'role': "Service"
+        'role': "Service",
+        'age': age,
+        'gender': gender
       });
 
       // Insert selected categories into `sp_skills` table
@@ -133,7 +140,15 @@ class _ServCreateAccountState extends State<ServCreateAccount> {
                       keyboardType: TextInputType.emailAddress,
                     ),
                     const SizedBox(height: 20),
-
+                    RoundedTextField(
+                      label: 'Age',
+                      textColor: const Color(0xFF006A4E),
+                      controller: ageController,
+                      keyboardType: TextInputType.number,
+                    ),
+                    const SizedBox(height: 20),
+                    _buildGenderDropdown(),
+                    const SizedBox(height: 20),
                     // Category selection dropdown
                     _buildCategoryDropdown(),
 
@@ -169,6 +184,39 @@ class _ServCreateAccountState extends State<ServCreateAccount> {
       ),
     );
   }
+
+  Widget _buildGenderDropdown() {
+  return DropdownButtonFormField<String>(
+    decoration: InputDecoration(
+      labelText: 'Gender',
+      labelStyle: const TextStyle(color: Color(0xFF006A4E)),
+      filled: true, // Enable filling
+      fillColor: Colors.white, // Set white background
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: Color(0xFF006A4E)),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: Color(0xFF006A4E), width: 2),
+      ),
+    ),
+    value: selectedGender,
+    items: ['Male', 'Female']
+        .map((gender) => DropdownMenuItem(
+              value: gender,
+              child: Text(gender),
+            ))
+        .toList(),
+    onChanged: (value) {
+      setState(() {
+        selectedGender = value!;
+      });
+    },
+    dropdownColor: Colors.white,
+    icon: const Icon(Icons.keyboard_arrow_down_rounded),
+  );
+}
 
   // Dropdown widget with checkboxes
   Widget _buildCategoryDropdown() {
